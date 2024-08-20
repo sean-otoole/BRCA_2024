@@ -3,10 +3,10 @@ import pandas as pd
 from scipy.io import mmread
 import decoupler as dc
 
-count_path = '/tmp/work/Visium/sean/Wu_etal_2021_BRCA_scRNASeq/count_matrix_sparse.mtx'
-genes_path = '/tmp/work/Visium/sean/Wu_etal_2021_BRCA_scRNASeq/count_matrix_genes.tsv'
-barcodes_path = '/tmp/work/Visium/sean/Wu_etal_2021_BRCA_scRNASeq/count_matrix_barcodes.tsv'
-metadata_path = '/tmp/work/Visium/sean/Wu_etal_2021_BRCA_scRNASeq/metadata.csv'
+count_path = '/tmp/work/Visium/BRCA_2024/Wu_etal_2021_BRCA_scRNASeq/count_matrix_sparse.mtx'
+genes_path = '/tmp/work/Visium/BRCA_2024/Wu_etal_2021_BRCA_scRNASeq/count_matrix_genes.tsv'
+barcodes_path = '/tmp/work/Visium/BRCA_2024/Wu_etal_2021_BRCA_scRNASeq/count_matrix_barcodes.tsv'
+metadata_path = '/tmp/work/Visium/BRCA_2024/Wu_etal_2021_BRCA_scRNASeq/metadata.csv'
 
 count_matrix = mmread(count_path).tocsr()
 count_matrix = count_matrix.transpose()  #ensures that genes are in columns and rows are barcodes
