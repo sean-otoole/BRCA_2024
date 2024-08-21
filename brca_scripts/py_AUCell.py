@@ -63,8 +63,8 @@ def AUCell(adata,signatures_dict,signatures_names,auc_threshold_percentage = 0.1
         print('\n')
         print('Current sig:')
         print(sig_name)
-        print('Original length is ',len(current_sig))
         current_sig = signatures_dict[sig_name]   # grab the list of genes for each signatures
+        print('Original length is ',len(current_sig))
         current_sig = [gene for gene in current_sig if gene in rank_df.columns]  # filter genes out of signature that are not present in the dataset
         print('After filtering the length is ',len(current_sig))
         print('\n')
