@@ -55,13 +55,19 @@ def calculate_auc(one_ranking, auc_threshold, max_auc):
     normalized_auc = auc/max_auc
     return normalized_auc
 
-def AUCell(adata,signatures_dict,signatures_names,auc_threshold_percentage = 0.05):
+def AUCell(adata,signatures_dict,signatures_names,auc_threshold_percentage = 0.1):
     rank_mat = rank_rows_random(adata.X)
     rank_df = pd.DataFrame(rank_mat, columns = adata.var['gene_ids'].index)   #a ranking dataframe used for all subsequent calculations
     auc_threshold = auc_threshold_percentage*max(rank_df.iloc[0,:])  #lowest rank to consider for top genes
     for sig_name in signatures_names:   #loop through the gene signatures
+        print('\n')
+        print('Current sig:')
+        print(sig_name)
+        print('Original length is ',len(current_sig))
         current_sig = signatures_dict[sig_name]   # grab the list of genes for each signatures
         current_sig = [gene for gene in current_sig if gene in rank_df.columns]  # filter genes out of signature that are not present in the dataset
+        print('After filtering the length is ',len(current_sig))
+        print('\n')
         max_auc = calculate_max_auc(current_sig,auc_threshold)
         norm_auc_list = []
         for index, row in rank_df.iterrows():
