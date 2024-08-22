@@ -139,6 +139,36 @@ def retrieveTumorMask(image_path,adata):
 
     filtered_adata = adata[overlap_vector, :]
 
+    spatial_coords = adata.obsm['spatial']*adata.uns['spatial'][sample_name]['scalefactors']['tissue_hires_scalef']
+
+    #code for creating an additional figure to demonstrate what had been filtered from the slide coordinates
+
+    fig, axs = plt.subplots(1,2,figsize=(16,8))
+    
+    axs[0].scatter(spatial_coords[:, 0], spatial_coords[:, 1], s=10, c='blue', alpha=0.6)
+    axs[0].invert_yaxis()  # Invert the y-axis to match the usual tissue slide orientation
+    axs[0].set_title('Pre-segmentation'+ ' (' +sample_name + ')')
+    axs[0].set_xlabel('X Coordinate')
+    axs[0].set_ylabel('Y Coordinate')
+    
+    spatial_coords = filtered_adata.obsm['spatial']*adata.uns['spatial'][sample_name]['scalefactors']['tissue_hires_scalef']
+    
+    # Plotting the spatial coordinates
+    # plt.figure(figsize=(8, 8))
+    axs[1].scatter(spatial_coords[:, 0], spatial_coords[:, 1], s=10, c='blue', alpha=0.6)
+    axs[1].invert_yaxis()  # Invert the y-axis to match the usual tissue slide orientation
+    axs[1].set_title('Post-segmentation'+ ' (' +sample_name + ')')
+    axs[1].set_xlabel('X Coordinate')
+    axs[1].set_ylabel('Y Coordinate')
+    
+    
+    dir_name = "/tmp/work/Visium/BRCA_2024/figures" 
+    pdf_path = os.path.join(dir_name, sample_name + '_coordinate_filtering' + '.' + 'pdf')
+    
+    plt.savefig(pdf_path, format='pdf')
+
+    plt.close(fig)
+    
     return(filtered_adata)
 
     

@@ -55,7 +55,7 @@ def calculate_auc(one_ranking, auc_threshold, max_auc):
     normalized_auc = auc/max_auc
     return normalized_auc
 
-def AUCell(adata,signatures_dict,signatures_names,auc_threshold_percentage = 0.1):
+def AUCell(adata,signatures_dict,signatures_names,auc_threshold_percentage = 0.05):   #recomendation is 5 percent
     rank_mat = rank_rows_random(adata.X)
     rank_df = pd.DataFrame(rank_mat, columns = adata.var['gene_ids'].index)   #a ranking dataframe used for all subsequent calculations
     auc_threshold = auc_threshold_percentage*max(rank_df.iloc[0,:])  #lowest rank to consider for top genes

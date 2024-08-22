@@ -23,11 +23,11 @@ def processVisium(sample, model):
     sc.pp.calculate_qc_metrics(adata, qc_vars=["mt"], inplace=True, log1p=True)
 
     #quality filtering
-    sc.pp.filter_cells(adata, min_counts=1000) ## pp = preprocess, filter coordinates with less than 600 reads.
+    sc.pp.filter_cells(adata, min_counts=600) ## pp = preprocess, filter coordinates with less than 600 reads.
     sc.pp.filter_cells(adata, min_genes=500)  ## filter with less than 500 genes expressed.
     adata = adata[adata.obs["pct_counts_mt"] < 10].copy()
     #print(f"#cells after MT filter: {adata.n_obs}")
-    sc.pp.filter_genes(adata, min_cells=5)  ## filter genes expressed in less than 10 locations.
+    sc.pp.filter_genes(adata, min_cells=10)  ## filter genes expressed in less than 10 locations.
 
     #standard processing steps
     sc.pp.normalize_total(adata, inplace=True, target_sum=1e4)
