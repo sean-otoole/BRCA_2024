@@ -1,8 +1,8 @@
 library(Seurat)
 library(future)
 setwd("/tmp/work/Visium/BRCA_2024")
-options(future.globals.maxSize = 15 * 1024^3)  # 10 GB
-plan("multicore", workers = 20)
+options(future.globals.maxSize = 60 * 1024^3)  # 10 GB
+plan("multicore", workers = 50)
 
 seurat_objects = readRDS('seurat_objects.rds')
 
