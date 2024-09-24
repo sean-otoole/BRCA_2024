@@ -6,12 +6,12 @@ import numpy as np
 import mygene
 
 def getRSigs():
-
     # Activate the pandas2ri conversion
     pandas2ri.activate()
     
     # Path to the .rds file
-    rds_path = os.path.join(os.getcwd(), 'gene_signatures', 'all_signature_list_ensembl.Rds')
+    rds_path = '/tmp/work/Visium/BRCA_2024/gene_signatures/all_signature_list_ensembl.Rds'
+    # rds_path = os.path.join(os.getcwd(), 'gene_signatures', 'all_signature_list_ensembl.Rds')
     
     # Load the readRDS function from R
     readRDS = robjects.r['readRDS']

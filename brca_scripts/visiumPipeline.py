@@ -13,7 +13,7 @@ def processVisium(sample, model):
     ##import and qc
     cwd = os.getcwd()
     current_sample_location = sample
-    data_dir = cwd.strip('BRCA_2024')+current_sample_location
+    data_dir = '/tmp/work/Visium/'+current_sample_location
     print(data_dir)
     image_dir = current_sample_location+"/spatial"
     current_sample = current_sample_location.split('/')[1]
