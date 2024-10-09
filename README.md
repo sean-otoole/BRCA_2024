@@ -1,1 +1,1 @@
-## This repository is still undergoing serious construction. A more detailed README will follow when the analysis is largely finalized.
+## This repository is still under construction. A more detailed README will be provided once the analysis is finalized.
