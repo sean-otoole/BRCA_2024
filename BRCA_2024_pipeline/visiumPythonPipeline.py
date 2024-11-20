@@ -24,11 +24,12 @@ import scanpy as sc  # For single-cell data analysis
 from celltypist import models  # For cell type annotation
 
 # Custom Scripts
-from visiumPipeline import processVisium  # Custom function for Visium data processing
+from preProcessPipeline import processVisium  # Custom function for Visium data processing
 from applyImageMask import applyMask  # Custom function for image masking
 from applyCosineScores import cosineScores  # Custom function for cosine similarity
 from getRSigs import getRSigs  # Custom function to retrieve gene signatures
 from pyAUCell import AUCell  # Custom function for AUCell scoring
+from geneSigCosSimHeatmap import gene_sig_cos_sim_heatmap  # Custom function for generating a specific correaltional heatmap
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
@@ -156,3 +157,74 @@ plt.grid(False)
 figures_dir = os.path.join(current_directory, 'figures')
 os.makedirs(figures_dir, exist_ok=True)
 plt.savefig(os.path.join(figures_dir, 'pca_kmeans_clustering_highlighted_rotated_labels.png'))
+
+# Define all possible cell type categories for consistent ordering
+cell_type_categories = ['Epithelial cells', 'Endothelial cells', 'Fibroblasts', 
+                         'B cells', 'Plasma cells', 'Macrophages', 'pDC']
+
+# Initialize an empty DataFrame to store the relative frequencies of cell types for each sample
+combined_df = pd.DataFrame(index=cell_type_categories)
+
+# Loop through each sample dataset
+for sample in sample_names:
+    # Extract the dataset for the current sample
+    current_data_set = visium_samples[sample]
+    
+    # Get the 'majority_voting' column, which contains the assigned cell type for each observation
+    current_counts = current_data_set.obs['majority_voting']
+    
+    # Create a frequency table for the cell types, ensuring all categories are included
+    frequency_table = current_counts.value_counts().reindex(cell_type_categories, fill_value=0)
+    
+    # Normalize the frequency table to obtain relative frequencies
+    relative_frequencies = frequency_table / frequency_table.sum()
+    
+    # Add the relative frequencies for this sample to the combined DataFrame
+    combined_df[sample] = relative_frequencies
+
+# Print the resulting DataFrame to verify its structure
+print(combined_df)
+
+# Create a simplified summary by combining certain categories
+simple_cateogories = {
+    'epi': combined_df.iloc[0:1, :].sum(axis=0),       # Sum frequencies of 'Epithelial cells'
+    'all_others': combined_df.iloc[1:, :].sum(axis=0) # Sum frequencies of all other cell types
+}
+
+# Convert the simplified categories into a new DataFrame
+simple_df = pd.DataFrame(data=simple_cateogories)
+
+# Transpose the DataFrame so that categories are rows and samples are columns
+simple_df = simple_df.transpose()
+
+# Rearrange the columns so that pre and post samples are grouped with eachother
+simple_df = simple_df[['PRE-01', 'PRE-02', 'PRE-04', 'PRE-05', 
+                       'POST-03', 'POST-05', 'POST-06', 'POST-11']]
+
+# Plot a stacked bar graph for the proportions of cell types across samples
+ax = combined_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap
+
+# Remove grid lines for cleaner visualization
+plt.grid(False)
+
+# Add a title and axis labels to the plot
+plt.title('Proportions of Different Cell Types Across Samples')
+plt.xlabel('Samples')
+plt.ylabel('Proportion')
+
+# Add a legend, placing it outside the plot to avoid overlap
+plt.legend(title='Cell Types', bbox_to_anchor=(1.02, 1), loc='upper left')
+
+# Adjust the layout to ensure elements fit well and prevent clipping
+plt.tight_layout(rect=[0, 0, 0.85, 1])  # Leaves space for the legend on the right
+
+# Save the figure to a specified directory with minimal whitespace
+plt.savefig(os.path.join(figures_dir, 'cell_type_dist_celltypist.png'))
+
+#correlate the cosine similarities of specific cell types with the gene signatures
+pre_corr_plot_location = os.getcwd() + '/figures/' + 'pre_correlations.png'
+post_corr_plot_location = os.getcwd() + '/figures/' + 'post_correlations.png'
+
+pre_order = gene_sig_cos_sim_heatmap('PRE',signature_groups_list,visium_samples,save_path=pre_corr_plot_location)
+gene_sig_cos_sim_heatmap('POST',signature_groups_list,visium_samples,pre_order,save_path=post_corr_plot_location)
+
