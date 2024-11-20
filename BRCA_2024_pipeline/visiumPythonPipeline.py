@@ -171,7 +171,8 @@ for sample in sample_names:
     current_data_set = visium_samples[sample]
     
     # Get the 'majority_voting' column, which contains the assigned cell type for each observation
-    current_counts = current_data_set.obs['majority_voting']
+    # current_counts = current_data_set.obs['majority_voting']
+    current_counts = pd.Series(current_data_set.obs['majority_voting'].astype('category'))
     
     # Create a frequency table for the cell types, ensuring all categories are included
     frequency_table = current_counts.value_counts().reindex(cell_type_categories, fill_value=0)
@@ -227,4 +228,10 @@ post_corr_plot_location = os.getcwd() + '/figures/' + 'post_correlations.png'
 
 pre_order = gene_sig_cos_sim_heatmap('PRE',signature_groups_list,visium_samples,save_path=pre_corr_plot_location)
 gene_sig_cos_sim_heatmap('POST',signature_groups_list,visium_samples,pre_order,save_path=post_corr_plot_location)
+
+# save all the anndata objects for metadata transfer to seurat objects within R
+for sample in visium_samples.keys():
+    current_object = visium_samples[sample]
+    current_path = os.getcwd() + "/objects/" + sample + ".h5ad"
+    current_object.write(current_path)
 
