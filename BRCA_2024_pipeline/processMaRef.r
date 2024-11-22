@@ -31,7 +31,9 @@ ref_data <- SCTransform(ref_data, ncells = 3000, verbose = FALSE) %>%
     RunUMAP(dims = 1:30)                 # Run UMAP to perform dimensionality reduction (use the first 30 PCs)
 
 # Save the transformed reference dataset to an RDS file for future use
-saveRDS(ref_data, 'b_cell_ref_data.rds')
+
+ma_et_al_path <- paste0(getwd(), '/objects/b_cell_ref_data.rds')
+saveRDS(ref_data, ma_et_al_path)
 
 # Create the second UMAP plot (after SCTransform) with a title
 # This plot visualizes the data after normalization (SCTransform)
@@ -43,6 +45,7 @@ p2 <- DimPlot(ref_data, group.by = "celltype", label = TRUE, cols = my36colors) 
 # The plots will be arranged in two columns (ncol = 2)
 combined_plot <- grid.arrange(p1, p2, ncol = 2)
 
-# Save the combined figure as a PNG file with specified dimensions and high resolution
-ggsave("ma_et_al_umaps.png", plot = combined_plot, width = 14, height = 8, dpi = 300)
+ma_et_al_path <- paste0(getwd(), '/figures/ma_et_al_umaps.png')
 
+# Save the combined figure as a PNG file with specified dimensions and high resolution
+ggsave(ma_et_al_path, plot = combined_plot, width = 14, height = 8, dpi = 300)
