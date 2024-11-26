@@ -1,0 +1,49 @@
+---
+title: "Investigation of the double-negative/atypical memory b-cell subtype in pre- and post-menopausal breast cancer samples"
+author: "Sean O'Toole"
+date: "`r Sys.Date()`"
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: true
+params:
+  run_python_script: TRUE  # determines if the python pipeline will run, or if the script relies on already stored objects
+---
+
+# Introduction
+
+This report investigates B-cell subtypes within pre- and post-menopausal Visium spatial transcriptomics samples. The research focuses on whether double-negative B-cell subtypes—also known as atypical memory cells or age-associated B-cells—could explain differences in patient outcomes and tumor composition between these groups.
+
+Pre-menopausal patients often present with more aggressive tumors and more severe diagnoses compared to their post-menopausal counterparts. This analysis explores how variations in B-cell subtypes may contribute to these differences. The report details the approaches taken and the conclusions drawn from this investigation.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results = 'hide', fig.show = 'hide'}
+library(Seurat)
+library(reticulate)
+
+## Conditionally source the Python script
+#if (params$run_python_script) {
+#  # Run Python script using reticulate
+#  py_run_file('visiumPythonPipeline.py')
+#}
+
+```
+
+# Initialization of the data pipeline in python and R
+
+# Subsetting based on the input from the pathologists
+
+```{r include-png, echo=FALSE}
+example_segmentation_path_pre1 <- paste0(getwd(), '/figures/PRE-01_segmentation_plots.png')
+knitr::include_graphics(example_segmentation_path_pre1)
+```
+
+And as you can see blah blah blah
+
+Below is a summary of the `cars` dataset and a corresponding scatter plot:
+
+```{r}
+# Summary of the dataset
+summary(cars)
+
+# Scatter plot of the dataset
+plot(cars, main = "Scatter Plot of Cars Dataset", xlab = "Speed", ylab = "Stopping Distance", col = "blue", pch = 19)
