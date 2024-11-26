@@ -6,10 +6,11 @@ library(ggplot2)    # For creating and customizing plots (ggtitle comes from ggp
 library(future)     # For parallel processing to improve computational efficiency
 
 # Set maximum global memory size to 30 GB for future operations (e.g., large data objects)
-options(future.globals.maxSize = 100 * 1024^3)  # 100 GiB limit for globals
+options(future.globals.maxSize = 150 * 1024^3)  # 100 GiB limit for globals
 
 # Set up parallel processing with 2 workers/cores to speed up computations
-plan("multicore", workers = 2)  # Reduce the number of cores to 2 to reduce memory usage
+#plan("multicore", workers = 1)  # Reduce the number of cores to 2 to reduce memory usage
+future::plan("sequential")
 
 # Define the path to the reference dataset (processed single-cell RNA-seq data)
 # The reference data is from a public repository and stored locally

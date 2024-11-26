@@ -20,11 +20,11 @@ Pre-menopausal patients often present with more aggressive tumors and more sever
 library(Seurat)
 library(reticulate)
 
-## Conditionally source the Python script
-#if (params$run_python_script) {
-#  # Run Python script using reticulate
-#  py_run_file('visiumPythonPipeline.py')
-#}
+# Conditionally source the Python script
+if (params$run_python_script) {
+  # Run Python script using reticulate
+  py_run_file('visiumPythonPipeline.py')
+}
 
 ```
 
