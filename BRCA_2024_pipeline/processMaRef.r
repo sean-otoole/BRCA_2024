@@ -1,16 +1,25 @@
 # Load required libraries
-library(Seurat)     # For single-cell RNA-seq analysis
-library(dplyr)      # For data manipulation (e.g., piping and transforming)
+library(Seurat)     # For single-cell RNA-seq analysis and visualization
+library(dplyr)      # For data manipulation (e.g., piping and transforming data)
 library(gridExtra)  # For arranging multiple plots in a grid
 library(ggplot2)    # For creating and customizing plots (ggtitle comes from ggplot2)
+library(future)     # For parallel processing to improve computational efficiency
+
+# Set maximum global memory size to 30 GB for future operations (e.g., large data objects)
+options(future.globals.maxSize = 100 * 1024^3)  # 100 GiB limit for globals
+
+# Set up parallel processing with 2 workers/cores to speed up computations
+plan("multicore", workers = 2)  # Reduce the number of cores to 2 to reduce memory usage
 
 # Define the path to the reference dataset (processed single-cell RNA-seq data)
+# The reference data is from a public repository and stored locally
 ref_data_dir <- paste0(getwd(), '/references/zenodo.11468564/scRNA_data/panB_scRNA_processed_data.rds')
 
-# Load the reference dataset from the specified directory
+# Load the reference dataset from the specified directory (single-cell RNA-seq data)
 ref_data <- readRDS(ref_data_dir)
 
-# Define a custom color palette for the different cell types (36 colors)
+# Define a custom color palette with 36 colors for visualizing different cell types
+# This will help differentiate the cell types in the UMAP plot
 my36colors <- c('#E5D2DD', '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476D87',
                 '#E95C59', '#E59CC4', '#AB3282', '#23452F', '#BD956A', '#8C549C', '#585658',
                 '#9FA3A8', '#E0D4CA', '#5F3D69', '#C5DEBA', '#58A4C3', '#E4C755', '#F7F398',
@@ -19,33 +28,36 @@ my36colors <- c('#E5D2DD', '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3'
                 '#968175')
 
 # Create the first UMAP plot (before SCTransform) with a title
-# This plot visualizes the data before normalization (SCTransform)
+# This plot visualizes the data before any normalization (SCTransform) has been applied
 p1 <- DimPlot(ref_data, group.by = "celltype", label = TRUE, cols = my36colors) + 
-  NoLegend() +                          # Remove the legend for better clarity
-  ggtitle("Before SCTransform")         # Add title to the plot
+  NoLegend() +                          # Remove the legend for clearer visualization
+  ggtitle("Before SCTransform")         # Add a title to the plot
 
 # Perform SCTransform normalization on the reference data
-# This step normalizes the gene expression data and reduces unwanted technical variation
-ref_data <- SCTransform(ref_data, ncells = 3000, verbose = FALSE) %>%
-    RunPCA(verbose = FALSE) %>%          # Perform Principal Component Analysis (PCA) on the normalized data
-    RunUMAP(dims = 1:30)                 # Run UMAP to perform dimensionality reduction (use the first 30 PCs)
+# SCTransform normalizes gene expression data and reduces technical variation
+# The process also returns a set of variable genes that are used for downstream analyses
+ref_data <- SCTransform(ref_data, ncells = 3000, verbose = TRUE, vst.flavor = "v2", conserve.memory = TRUE, return.only.var.genes = FALSE) %>%
+    RunPCA(verbose = FALSE) %>%          # Run PCA to reduce dimensionality after SCTransform
+    RunUMAP(dims = 1:30)                 # Run UMAP on the first 30 principal components for visualization
 
 # Save the transformed reference dataset to an RDS file for future use
-
+# This allows us to re-use the transformed data without having to reprocess it
 ma_et_al_path <- paste0(getwd(), '/objects/b_cell_ref_data.rds')
 saveRDS(ref_data, ma_et_al_path)
 
 # Create the second UMAP plot (after SCTransform) with a title
-# This plot visualizes the data after normalization (SCTransform)
+# This plot visualizes the data after normalization (SCTransform) has been applied
 p2 <- DimPlot(ref_data, group.by = "celltype", label = TRUE, cols = my36colors) + 
-  NoLegend() +                          # Remove the legend
-  ggtitle("After SCTransform")          # Add title to the plot
+  NoLegend() +                          # Remove the legend for clarity
+  ggtitle("After SCTransform")          # Add a title to the plot
 
-# Combine the two UMAP plots into a single figure (side by side) for easy comparison
-# The plots will be arranged in two columns (ncol = 2)
+# Combine the two UMAP plots (before and after SCTransform) into a single figure
+# The plots will be arranged side by side (ncol = 2)
 combined_plot <- grid.arrange(p1, p2, ncol = 2)
 
+# Define the path to save the combined figure as a PNG file in the 'figures' directory
 ma_et_al_path <- paste0(getwd(), '/figures/ma_et_al_umaps.png')
 
-# Save the combined figure as a PNG file with specified dimensions and high resolution
+# Save the combined figure as a high-resolution PNG file
+# The plot will have dimensions of 14x8 inches with a resolution of 300 DPI
 ggsave(ma_et_al_path, plot = combined_plot, width = 14, height = 8, dpi = 300)

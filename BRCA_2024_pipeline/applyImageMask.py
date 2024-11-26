@@ -107,6 +107,21 @@ def applyMask(adata, sample_name):
     axs[1, 1].set_xlim(x_limits)
     axs[1, 1].set_ylim(y_limits)
 
+    # # Adding labels to each subplot outside the axes in the top-left corner
+    # labels = ['a', 'b', 'c', 'd']  # Subpanel labels
+    # for ax, label in zip(axs.flat, labels):
+    #     ax.text(1.05, 1.05, label, transform=ax.transAxes, 
+    #             fontsize=16, fontweight='bold', va='top', ha='left')
+
+    # Adding labels outside the axes but in the top-left corner
+    labels = ['a', 'b', 'c', 'd']  # Subpanel labels
+    for ax, label in zip(axs.flat, labels):
+        ax.text(-0.1, 1.05, label, transform=ax.transAxes, 
+                fontsize=16, fontweight='bold', va='top', ha='left')
+        
+    # Adjust spacing to accommodate the labels outside the axes
+    plt.subplots_adjust(left=0.1, right=0.85, top=0.85, bottom=0.1)
+
     # Adjust layout to avoid overlap between subplots
     plt.tight_layout()
 

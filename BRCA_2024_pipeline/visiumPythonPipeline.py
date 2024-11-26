@@ -24,12 +24,12 @@ import scanpy as sc  # For single-cell data analysis
 from celltypist import models  # For cell type annotation
 
 # Custom Scripts
-from preProcessPipeline import processVisium  # Custom function for Visium data processing
 from applyImageMask import applyMask  # Custom function for image masking
 from applyCosineScores import cosineScores  # Custom function for cosine similarity
 from getRSigs import getRSigs  # Custom function to retrieve gene signatures
 from pyAUCell import AUCell  # Custom function for AUCell scoring
 from geneSigCosSimHeatmap import gene_sig_cos_sim_heatmap  # Custom function for generating a specific correaltional heatmap
+from preProcessPipeline import processVisium
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
