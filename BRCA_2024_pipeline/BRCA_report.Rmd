@@ -7,7 +7,8 @@ output:
     theme: cayman
     toc: true
 params:
-  run_python_script: TRUE  # determines if the python pipeline will run, or if the script relies on already stored objects
+  run_python_script: FALSE  # determines if the python pipeline will ran, or if the script relies on already stored objects
+  run_R_script: FALSE # determines if the R pipeline will ran, or if the script relies on already stored objects
 ---
 
 # Introduction
@@ -20,30 +21,76 @@ Pre-menopausal patients often present with more aggressive tumors and more sever
 library(Seurat)
 library(reticulate)
 
-# Conditionally source the Python script
+# Conditionally source the Python pipeline script
 if (params$run_python_script) {
   # Run Python script using reticulate
   py_run_file('visiumPythonPipeline.py')
+}
+
+# Conditionally source the R pipeline script
+if (params$run_R_script) {
+  source('visiumRPipeline.r')
 }
 
 ```
 
 # Initialization of the data pipeline in python and R
 
+The overall pipeline is implemented in both Python and R. Initially, the 10x Visium datasets are imported using the Squidpy and Scanpy packages. Spatial transcriptomics data from 10x Visium were processed with these packages. Gene names were made unique to avoid potential duplicates, and mitochondrial genes were identified based on the "MT-" prefix. Quality control (QC) included calculating the percentage of mitochondrial content, filtering out cells with fewer than 600 counts or fewer than 500 genes, and excluding cells with greater than 10% mitochondrial content. Genes expressed in fewer than 10 cells were also removed. After filtering, the data were normalized by scaling gene expression to a total count of 10,000, followed by log-transformation. Cell type annotations were obtained using the pre-trained CellTypist model (Immune_All_High), with majority voting to assign the most likely cell type to each cluster. The resulting AnnData objects contained gene expression, clustering, and cell type annotation information for downstream analysis.
+
+Subsequently, the samples were filtered based on binarized images derived from the recommendations of pathologists who outlined the location of the tumor in each slide. Exceptionally, in one sample (Post-06), a portion of the tumor was discarded due to abnormal morphology. All samples were then converted to Seurat objects and further processed in R. Additional metrics were calculated and incorporated into the Seurat objects for further analysis, including data integration-related metrics with multiple reference datasets and numerous gene signature scores. These and other analyses are described below.
+
 # Subsetting based on the input from the pathologists
 
-```{r include-png, echo=FALSE}
+As mentioned above, we consulted with pathologists who drew outlines of which area of the tissue we should focus on based on tumor morphology. This should reduce some of the variance between samples especially considering that the total area of each slide occupied by tumors differed between samples.
+
+```{r, echo=FALSE}
+qupath_outlines <- paste0(getwd(), '/figures/qupath_outlines.png')
+knitr::include_graphics(qupath_outlines)
+```
+
+I used the outlines from each sample to generate a black-and-white image mask in ImageJ (**panel A**). These binary masks were then converted into a binarized vector in Python. For each sample, the spatial coordinates of sequencing locations were scaled and rounded to match the dimensions of the high-resolution image used to generate the mask. Any spatial coordinates that corresponded to a mask value of 0 were discarded. In the panel below, you can see the spatial coordinates before filtering (**panel C**) and after filtering (**panel D**). Additionally, **panel B** shows the assigned cell type identities for each spot after spatial filtering.
+
+```{r, echo=FALSE}
 example_segmentation_path_pre1 <- paste0(getwd(), '/figures/PRE-01_segmentation_plots.png')
 knitr::include_graphics(example_segmentation_path_pre1)
 ```
 
-And as you can see blah blah blah
+# Sample quality metrics
 
-Below is a summary of the `cars` dataset and a corresponding scatter plot:
+XXX as you can see blah blah blah XXX
 
-```{r}
-# Summary of the dataset
-summary(cars)
+# Verifying the veracity of celltypist assigned b-cell identitys
 
-# Scatter plot of the dataset
-plot(cars, main = "Scatter Plot of Cars Dataset", xlab = "Speed", ylab = "Stopping Distance", col = "blue", pch = 19)
+XXX as you can see blah blah blah XXX
+
+# Distribution of celltypist assigned cell types
+
+```{r, echo=FALSE}
+celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png')
+knitr::include_graphics(celltypist_bar_chart)
+```
+
+# Examination of gene signatures
+
+XXX as you can see blah blah blah XXX
+
+# Correlation of gene signatures with celltypist identities
+
+```{r, echo=FALSE}
+pre_corr <- paste0(getwd(), '/figures/pre_correlations.png')
+post_corr <- paste0(getwd(), '/figures/post_correlations.png')
+knitr::include_graphics(pre_corr)
+knitr::include_graphics(post_corr)
+```
+
+# Comparison of samples with bulk RNA sequencing data
+
+XXX as you can see blah blah blah XXX
+
+```{r, echo=FALSE}
+bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted_rotated_labels.png')
+knitr::include_graphics(bulk_low_dim_plot)
+```
+
+# The next thing is..
