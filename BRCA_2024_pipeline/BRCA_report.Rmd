@@ -60,6 +60,11 @@ knitr::include_graphics(example_segmentation_path_pre1)
 
 XXX as you can see blah blah blah XXX
 
+```{r, echo=FALSE}
+vln_plots <- paste0(getwd(), 'vlnplot_grid.png')
+knitr::include_graphics(vln_plots)
+```
+
 # Verifying the veracity of celltypist assigned b-cell identitys
 
 XXX as you can see blah blah blah XXX
@@ -93,4 +98,17 @@ bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted
 knitr::include_graphics(bulk_low_dim_plot)
 ```
 
-# The next thing is..
+# Examination of the double negative b-cell gene signature across samples
+
+Below are the images of the double negative b-cell gene sig nature score:
+
+```{r, echo=FALSE}
+features_plot <- paste0(getwd(), 'spatial_feature_plots.png')
+knitr::include_graphics(features_plot)
+```
+Here are some summary statistics:
+
+```{r, echo=FALSE}
+summary_stats <- paste0(getwd(), 'summary_stats_test.png')
+knitr::include_graphics(summary_stats)
+```

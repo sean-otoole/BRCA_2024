@@ -59,7 +59,7 @@ b_features <- VariableFeatures(b_ref)
 
 ## generate a psuedobulk dataframe where the rows are the HVGs and the columns are cell type
 pseudo_b_ref <- AggregateExpression(b_ref, features = b_features, assays = "RNA", return.seurat = T, group.by = "celltype")
-b_ref_matrix <- GetAssayData(pseudo_b_ref, assay = "RNA", slot = "scale.data")
+b_ref_matrix <- GetAssayData(pseudo_b_ref, assay = "RNA", slot = "data")
 
 ## import the seurat processed data
 visium_path <- paste0(getwd(), '/objects/seurat_objects.rds')
