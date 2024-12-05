@@ -11,6 +11,11 @@ params:
   run_R_script: FALSE # determines if the R pipeline will ran, or if the script relies on already stored objects
 ---
 
+<!--
+In order to generate the report, you can run the script using the following command in the terminal:
+!Rscript -e "rmarkdown::render('BRCA_report.Rmd', output_format = 'prettydoc::html_pretty', output_dir = 'reports')"
+-->
+
 # Introduction
 
 This report investigates B-cell subtypes within pre- and post-menopausal Visium spatial transcriptomics samples. The research focuses on whether double-negative B-cell subtypes—also known as atypical memory cells or age-associated B-cells—could explain differences in patient outcomes and tumor composition between these groups.
@@ -60,8 +65,20 @@ knitr::include_graphics(example_segmentation_path_pre1)
 
 XXX as you can see blah blah blah XXX
 
-```{r, echo=FALSE}
-vln_plots <- paste0(getwd(), 'vlnplot_grid.png')
+```{r, echo=FALSE, fig.show='hide', results = 'hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/summary_stats.r')
+# Run the R script
+
+invisible({
+source(script_path)
+})
+
+```
+
+
+```{r, echo = FALSE}
+vln_plots <- paste0(getwd(),'/figures/','vlnplot_grid.png')
 knitr::include_graphics(vln_plots)
 ```
 
@@ -100,15 +117,46 @@ knitr::include_graphics(bulk_low_dim_plot)
 
 # Examination of the double negative b-cell gene signature across samples
 
-Below are the images of the double negative b-cell gene sig nature score:
+Below are the images of the double negative b-cell gene signature score:
 
-```{r, echo=FALSE}
-features_plot <- paste0(getwd(), 'spatial_feature_plots.png')
-knitr::include_graphics(features_plot)
+```{r, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "DN2_Bcells"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
 ```
-Here are some summary statistics:
 
 ```{r, echo=FALSE}
-summary_stats <- paste0(getwd(), 'summary_stats_test.png')
-knitr::include_graphics(summary_stats)
+current_metric <- "DN2_Bcells"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
+# Examination of the double negative b-cell cosine similarity across samples
+
+Below are the images of the double negative b-cell cosine similarity values:
+
+```{r, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "dn_b_cos"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
+```
+
+```{r, echo=FALSE}
+current_metric <- "dn_b_cos"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
 ```
