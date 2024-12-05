@@ -1,0 +1,162 @@
+---
+title: "Investigation of the double-negative/atypical memory b-cell subtype in pre- and post-menopausal breast cancer samples"
+author: "Sean O'Toole"
+date: "`r Sys.Date()`"
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: true
+params:
+  run_python_script: FALSE  # determines if the python pipeline will ran, or if the script relies on already stored objects
+  run_R_script: FALSE # determines if the R pipeline will ran, or if the script relies on already stored objects
+---
+
+<!--
+In order to generate the report, you can run the script using the following command in the terminal:
+!Rscript -e "rmarkdown::render('BRCA_report.Rmd', output_format = 'prettydoc::html_pretty', output_dir = 'reports')"
+-->
+
+# Introduction
+
+This report investigates B-cell subtypes within pre- and post-menopausal Visium spatial transcriptomics samples. The research focuses on whether double-negative B-cell subtypes—also known as atypical memory cells or age-associated B-cells—could explain differences in patient outcomes and tumor composition between these groups.
+
+Pre-menopausal patients often present with more aggressive tumors and more severe diagnoses compared to their post-menopausal counterparts. This analysis explores how variations in B-cell subtypes may contribute to these differences. The report details the approaches taken and the conclusions drawn from this investigation.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results = 'hide', fig.show = 'hide'}
+library(Seurat)
+library(reticulate)
+
+# Conditionally source the Python pipeline script
+if (params$run_python_script) {
+  # Run Python script using reticulate
+  py_run_file('visiumPythonPipeline.py')
+}
+
+# Conditionally source the R pipeline script
+if (params$run_R_script) {
+  source('visiumRPipeline.r')
+}
+
+```
+
+# Initialization of the data pipeline in python and R
+
+The overall pipeline is implemented in both Python and R. Initially, the 10x Visium datasets are imported using the Squidpy and Scanpy packages. Spatial transcriptomics data from 10x Visium were processed with these packages. Gene names were made unique to avoid potential duplicates, and mitochondrial genes were identified based on the "MT-" prefix. Quality control (QC) included calculating the percentage of mitochondrial content, filtering out cells with fewer than 600 counts or fewer than 500 genes, and excluding cells with greater than 10% mitochondrial content. Genes expressed in fewer than 10 cells were also removed. After filtering, the data were normalized by scaling gene expression to a total count of 10,000, followed by log-transformation. Cell type annotations were obtained using the pre-trained CellTypist model (Immune_All_High), with majority voting to assign the most likely cell type to each cluster. The resulting AnnData objects contained gene expression, clustering, and cell type annotation information for downstream analysis.
+
+Subsequently, the samples were filtered based on binarized images derived from the recommendations of pathologists who outlined the location of the tumor in each slide. Exceptionally, in one sample (Post-06), a portion of the tumor was discarded due to abnormal morphology. All samples were then converted to Seurat objects and further processed in R. Additional metrics were calculated and incorporated into the Seurat objects for further analysis, including data integration-related metrics with multiple reference datasets and numerous gene signature scores. These and other analyses are described below.
+
+# Subsetting based on the input from the pathologists
+
+As mentioned above, we consulted with pathologists who drew outlines of which area of the tissue we should focus on based on tumor morphology. This should reduce some of the variance between samples especially considering that the total area of each slide occupied by tumors differed between samples.
+
+```{r, echo=FALSE}
+qupath_outlines <- paste0(getwd(), '/figures/qupath_outlines.png')
+knitr::include_graphics(qupath_outlines)
+```
+
+I used the outlines from each sample to generate a black-and-white image mask in ImageJ (**panel A**). These binary masks were then converted into a binarized vector in Python. For each sample, the spatial coordinates of sequencing locations were scaled and rounded to match the dimensions of the high-resolution image used to generate the mask. Any spatial coordinates that corresponded to a mask value of 0 were discarded. In the panel below, you can see the spatial coordinates before filtering (**panel C**) and after filtering (**panel D**). Additionally, **panel B** shows the assigned cell type identities for each spot after spatial filtering.
+
+```{r, echo=FALSE}
+example_segmentation_path_pre1 <- paste0(getwd(), '/figures/PRE-01_segmentation_plots.png')
+knitr::include_graphics(example_segmentation_path_pre1)
+```
+
+# Sample quality metrics
+
+XXX as you can see blah blah blah XXX
+
+```{r, echo=FALSE, fig.show='hide', results = 'hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/summary_stats.r')
+# Run the R script
+
+invisible({
+source(script_path)
+})
+
+```
+
+
+```{r, echo = FALSE}
+vln_plots <- paste0(getwd(),'/figures/','vlnplot_grid.png')
+knitr::include_graphics(vln_plots)
+```
+
+# Verifying the veracity of celltypist assigned b-cell identitys
+
+XXX as you can see blah blah blah XXX
+
+# Distribution of celltypist assigned cell types
+
+```{r, echo=FALSE}
+celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png')
+knitr::include_graphics(celltypist_bar_chart)
+```
+
+# Examination of gene signatures
+
+XXX as you can see blah blah blah XXX
+
+# Correlation of gene signatures with celltypist identities
+
+```{r, echo=FALSE}
+pre_corr <- paste0(getwd(), '/figures/pre_correlations.png')
+post_corr <- paste0(getwd(), '/figures/post_correlations.png')
+knitr::include_graphics(pre_corr)
+knitr::include_graphics(post_corr)
+```
+
+# Comparison of samples with bulk RNA sequencing data
+
+XXX as you can see blah blah blah XXX
+
+```{r, echo=FALSE}
+bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted_rotated_labels.png')
+knitr::include_graphics(bulk_low_dim_plot)
+```
+
+# Examination of the double negative b-cell gene signature across samples
+
+Below are the images of the double negative b-cell gene signature score:
+
+```{r, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "DN2_Bcells"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
+```
+
+```{r, echo=FALSE}
+current_metric <- "DN2_Bcells"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
+# Examination of the double negative b-cell cosine similarity across samples
+
+Below are the images of the double negative b-cell cosine similarity values:
+
+```{r, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "dn_b_cos"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
+```
+
+```{r, echo=FALSE}
+current_metric <- "dn_b_cos"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
