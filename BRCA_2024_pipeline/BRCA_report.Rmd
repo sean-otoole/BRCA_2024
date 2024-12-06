@@ -84,7 +84,7 @@ knitr::include_graphics(vln_plots)
 
 # Verifying the veracity of celltypist assigned b-cell identitys
 
-XXX as you can see blah blah blah XXX
+In order to test the accuracy of the CellTypist-based cell type assignment, I examined the cosine similarity scores for several different cell types (including B-cells) using an average expression vector derived from each, taken from a reference dataset (Wu et al., 2021). As you can see, the cosine similarity scores for the B-cells (**panel A**) largely align with the B-cell type assignments from CellTypist (**panel B**). This comparison served two purposes. First, it enabled a sanity check for the CellTypist assignment. Additionally, the cosine similarity scores can more easily be correlated with other metrics, such as gene signature scores, to determine how cell type identity and gene signature scores may correlate.
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 # Load necessary library
@@ -120,6 +120,8 @@ print(combined_plot)
 ```
 
 # Distribution of celltypist assigned cell types
+
+Here I am showing the distribution of cell types for each sample across a number of major relevant cell types, based on the CellTypist type assignment. Not all types were present across all samples. However, please note that the absence of B-cells for any given sample doesn't necessarily mean they are not present. Each spot on the Visium slide is 55 microns in diameter. If we assume each cell has a diameter of 10 microns, then each spot likely contains approximately 22 cells (assuming all cells and spots are circular). This is also why calculating metrics such as cosine similarity or examining gene signatures may be important since they allow us to essentially deconvolute our datasets. Anyway, the major conclusion we can draw from the bar chart is that there aren't any major or consistent cell type distribution patterns amongst samples.
 
 ```{r, echo=FALSE}
 celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png')
