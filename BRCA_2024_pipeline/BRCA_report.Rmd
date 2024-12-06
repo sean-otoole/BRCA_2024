@@ -138,7 +138,7 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-# Examination of the double negative b-cell cosine similarity across samples
+# Examination of the atypical cosine similarity across samples, based on Ma et al 2024
 
 Below are the images of the double negative b-cell cosine similarity values..:
 
@@ -157,6 +157,37 @@ suppressWarnings(suppressMessages({
 
 ```{r, echo=FALSE}
 current_metric <- "dn_b_cos"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
+# Examination of the atypical memory cell prediction score across samples, based on Ma et a 2024
+
+Below are the images of the double negative b-cell atypical memory cell predictions..:
+
+```{r, echo=FALSE, fig.show='hide',results ='hide'}
+
+#it is neccesary to add the predition scores to the metadata prior to plotting
+object_path <- paste0(getwd(),'/objects/','seurat_objects.rds')
+seurat_objects <- readRDS(object_path)
+AtM_scores <- t(seurat_objects[['predictions']]$data)[,'B.09.DUSP4+AtM']
+seurat_objects[[]]$AtM_scores <- AtM_scores
+saveRDS(seurat_objects, object_path)
+
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "AtM_scores"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
+```
+
+```{r, echo=FALSE}
+current_metric <- "AtM_scores"
 plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
