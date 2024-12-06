@@ -63,7 +63,7 @@ knitr::include_graphics(example_segmentation_path_pre1)
 
 # Sample quality metrics
 
-XXX as you can see blah blah blah XXX
+Below, I am examining several quality metrics, which include the number of unique features (left), mitochondrial features (center), and the number of unique molecular identifiers mapping to the transcriptome for each of the datasets (right). Sample Post-11 had very low read counts compared to the other samples. In many instances, it could make sense to exclude this sample. However, its presence does not alter the conclusions of this report, so I have kept it in despite the fact that it has a very low UMI count.
 
 ```{r, echo=FALSE, fig.show='hide', results = 'hide'}
 # Specify the path to the R script
@@ -85,6 +85,39 @@ knitr::include_graphics(vln_plots)
 # Verifying the veracity of celltypist assigned b-cell identitys
 
 XXX as you can see blah blah blah XXX
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+# Load necessary library
+library(Seurat)
+library(patchwork)
+library(ggplot2)
+
+object_path <- paste0(getwd(),'/objects/','seurat_objects.rds')
+seurat_objects <- readRDS(object_path)
+
+# Subset the object
+seurat_obj <- subset(seurat_objects, subset = sample %in% c('PRE-01'))
+
+# Generate the first plot
+plot_A <- SpatialFeaturePlot(seurat_obj, features = 'B.cells_cos_sim', 
+                             pt.size = 2, alpha = 0.8) +
+  ggtitle("A") + # Add title "A" for labeling
+  theme(legend.position = "bottom") # Move color bar to the bottom
+
+# Update the identities
+Idents(seurat_obj) <- 'majority_voting'
+
+# Generate the second plot
+plot_B <- SpatialDimPlot(seurat_obj, pt.size = 2, alpha = 0.8) +
+  ggtitle("B") # Add title "B" for labeling
+
+# Combine the plots into one figure in a row
+combined_plot <- plot_A | plot_B
+```
+
+```{r, echo=FALSE}
+print(combined_plot)
+```
 
 # Distribution of celltypist assigned cell types
 
