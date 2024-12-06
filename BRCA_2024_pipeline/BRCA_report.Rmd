@@ -140,7 +140,7 @@ knitr::include_graphics(plot_path)
 
 # Examination of the double negative b-cell cosine similarity across samples
 
-Below are the images of the double negative b-cell cosine similarity values:
+Below are the images of the double negative b-cell cosine similarity values..:
 
 ```{r, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
