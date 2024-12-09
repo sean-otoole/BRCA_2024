@@ -303,32 +303,10 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-# Cell interactions
+# Spatially Differentially expressed genes
 
 XXX TBD XXX
 
-# Relevant genes
+# Cell interactions
 
-XXX include differential expression table XXX
-
-XXX as well as another gene sig XXX
-
-```{r grab_Gene, echo=FALSE, fig.show='hide',results ='hide'}
-# Specify the path to the R script
-script_path <- paste0(getwd(), '/spatial_metric_description.r')
-# Run the R script
-source(script_path)
-current_metric <- "FCRL5"
-
-suppressWarnings(suppressMessages({
-       spatial_metrics(current_metric, gene = TRUE)  # Call the function defined in the script
-   }))
-
-```
-
-```{r display_LSM4, echo=FALSE}
-current_metric <- "FCRL5"
-plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
-knitr::include_graphics(plot_path)
-```
-
+XXX TBD XXX
