@@ -202,8 +202,14 @@ simple_df = simple_df.transpose()
 simple_df = simple_df[['PRE-01', 'PRE-02', 'PRE-04', 'PRE-05', 
                        'POST-03', 'POST-05', 'POST-06', 'POST-11']]
 
+# Do the same for the combined_df
+
+combined_df = combined_df[['PRE-01', 'PRE-02', 'PRE-04', 'PRE-05', 
+                       'POST-03', 'POST-05', 'POST-06', 'POST-11']]
+
 # Plot a stacked bar graph for the proportions of cell types across samples
-ax = combined_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap
+# ax = combined_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap
+ax = simple_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap
 
 # Remove grid lines for cleaner visualization
 plt.grid(False)
@@ -220,6 +226,25 @@ plt.legend(title='Cell Types', bbox_to_anchor=(1.02, 1), loc='upper left')
 plt.tight_layout(rect=[0, 0, 0.85, 1])  # Leaves space for the legend on the right
 
 # Save the figure to a specified directory with minimal whitespace
+plt.savefig(os.path.join(figures_dir, 'cell_type_dist_celltypist_simple.png'))
+
+# Plot a stacked bar graph for the proportions of cell types across samples
+ax = combined_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap
+
+# Remove grid lines for cleaner visualization
+plt.grid(False)
+
+# Add a title and axis labels to the plot
+plt.title('Proportions of Different Cell Types Across Samples')
+plt.xlabel('Samples')
+plt.ylabel('Proportion')
+
+# Add a legend, placing it outside the plot to avoid overlap
+plt.legend(title='Cell Types', bbox_to_anchor=(1.02, 1), loc='upper left')
+
+# Adjust the layout to ensure elements fit well and prevent clipping
+plt.tight_layout(rect=[0, 0, 0.85, 1])  # Leaves space for the legend on the righ
+
 plt.savefig(os.path.join(figures_dir, 'cell_type_dist_celltypist.png'))
 
 #correlate the cosine similarities of specific cell types with the gene signatures
