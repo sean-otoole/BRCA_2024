@@ -22,7 +22,7 @@ This report investigates B-cell subtypes within pre- and post-menopausal Visium 
 
 Pre-menopausal patients often present with more aggressive tumors and more severe diagnoses compared to their post-menopausal counterparts. This analysis explores how variations in B-cell subtypes may contribute to these differences. The report details the approaches taken and the conclusions drawn from this investigation.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results = 'hide', fig.show = 'hide'}
+```{r data_preprocessing, echo=FALSE, message=FALSE, warning=FALSE, results = 'hide', fig.show = 'hide'}
 library(Seurat)
 library(reticulate)
 
@@ -49,14 +49,14 @@ Subsequently, the samples were filtered based on binarized images derived from t
 
 As mentioned above, we consulted with pathologists who drew outlines of which area of the tissue we should focus on based on tumor morphology. This should reduce some of the variance between samples especially considering that the total area of each slide occupied by tumors differed between samples.
 
-```{r, echo=FALSE}
+```{r display_fig_qupath, echo=FALSE}
 qupath_outlines <- paste0(getwd(), '/figures/qupath_outlines.png')
 knitr::include_graphics(qupath_outlines)
 ```
 
 I used the outlines from each sample to generate a black-and-white image mask in ImageJ (**panel A**). These binary masks were then converted into a binarized vector in Python. For each sample, the spatial coordinates of sequencing locations were scaled and rounded to match the dimensions of the high-resolution image used to generate the mask. Any spatial coordinates that corresponded to a mask value of 0 were discarded. In the panel below, you can see the spatial coordinates before filtering (**panel C**) and after filtering (**panel D**). Additionally, **panel B** shows the assigned cell type identities for each spot after spatial filtering.
 
-```{r, echo=FALSE}
+```{r display_fig_segmentation, echo=FALSE}
 example_segmentation_path_pre1 <- paste0(getwd(), '/figures/PRE-01_segmentation_plots.png')
 knitr::include_graphics(example_segmentation_path_pre1)
 ```
@@ -65,7 +65,7 @@ knitr::include_graphics(example_segmentation_path_pre1)
 
 Below, I am examining several quality metrics, which include the number of unique features (left), mitochondrial features (center), and the number of unique molecular identifiers mapping to the transcriptome for each of the datasets (right). Sample Post-11 had very low read counts compared to the other samples. In many instances, it could make sense to exclude this sample. However, its presence does not alter the conclusions of this report, so I have kept it in despite the fact that it has a very low UMI count.
 
-```{r, echo=FALSE, fig.show='hide', results = 'hide'}
+```{r get_summary_stats, echo=FALSE, fig.show='hide', results = 'hide'}
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/summary_stats.r')
 # Run the R script
@@ -77,7 +77,7 @@ source(script_path)
 ```
 
 
-```{r, echo = FALSE}
+```{r display_fig_summary, echo = FALSE}
 vln_plots <- paste0(getwd(),'/figures/','vlnplot_grid.png')
 knitr::include_graphics(vln_plots)
 ```
@@ -86,7 +86,7 @@ knitr::include_graphics(vln_plots)
 
 In order to test the accuracy of the CellTypist-based cell type assignment, I examined the cosine similarity scores for several different cell types (including B-cells) using an average expression vector derived from each, taken from a reference dataset (Wu et al., 2021). As you can see, the cosine similarity scores for the B-cells (**panel A**) largely align with the B-cell type assignments from CellTypist (**panel B**). This comparison served two purposes. First, it enabled a sanity check for the CellTypist assignment. Additionally, the cosine similarity scores can more easily be correlated with other metrics, such as gene signature scores, to determine how cell type identity and gene signature scores may correlate.
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+```{r compare_celltypist_cos, message=FALSE, warning=FALSE, echo=FALSE}
 # Load necessary library
 library(Seurat)
 library(patchwork)
@@ -115,7 +115,7 @@ plot_B <- SpatialDimPlot(seurat_obj, pt.size = 2, alpha = 0.8) +
 combined_plot <- plot_A | plot_B
 ```
 
-```{r, echo=FALSE}
+```{r display_celltypist_cos, echo=FALSE}
 print(combined_plot)
 ```
 
@@ -123,18 +123,68 @@ print(combined_plot)
 
 Here I am showing the distribution of cell types for each sample across a number of major relevant cell types, based on the CellTypist type assignment. Not all types were present across all samples. However, please note that the absence of B-cells for any given sample doesn't necessarily mean they are not present. Each spot on the Visium slide is 55 microns in diameter. If we assume each cell has a diameter of 10 microns, then each spot likely contains approximately 22 cells (assuming all cells and spots are circular). This is also why calculating metrics such as cosine similarity or examining gene signatures may be important since they allow us to essentially deconvolute our datasets. Anyway, the major conclusion we can draw from the bar chart is that there aren't any major or consistent cell type distribution patterns amongst samples.
 
-```{r, echo=FALSE}
+```{r display_bar_summary, echo=FALSE}
 celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png')
+knitr::include_graphics(celltypist_bar_chart)
+```
+
+XXX I can simply the categories to make things more clear ###
+
+```{r display_bar_summary_simple, echo=FALSE}
+celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist_simple.png')
 knitr::include_graphics(celltypist_bar_chart)
 ```
 
 # Examination of gene signatures
 
-XXX as you can see blah blah blah XXX
+XXX explanation of gene sigs XXX
 
-# Correlation of gene signatures with celltypist identities
+Here is one interesting gene sig:
 
-```{r, echo=FALSE}
+```{r describe_goffnk, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "Goff_NK.cells"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
+```
+
+```{r display_goffnk_plot, echo=FALSE}
+current_metric <- "Goff_NK.cells"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
+XXX as well as another gene sig XXX
+
+```{r describe_Goff_Agpresentation, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "Goff_Agpresentation"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+
+```
+
+```{r display_Goff_Agpresentation, echo=FALSE}
+current_metric <- "Goff_Agpresentation"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
+
+# Correlation of gene signatures with cell type identities
+
+```{r display_gene_sign_type_correlation, echo=FALSE}
 pre_corr <- paste0(getwd(), '/figures/pre_correlations.png')
 post_corr <- paste0(getwd(), '/figures/post_correlations.png')
 knitr::include_graphics(pre_corr)
@@ -145,7 +195,7 @@ knitr::include_graphics(post_corr)
 
 XXX as you can see blah blah blah XXX
 
-```{r, echo=FALSE}
+```{r display_bulk_compar_plot, echo=FALSE}
 bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted_rotated_labels.png')
 knitr::include_graphics(bulk_low_dim_plot)
 ```
@@ -154,7 +204,7 @@ knitr::include_graphics(bulk_low_dim_plot)
 
 Below are the images of the double negative b-cell gene signature score:
 
-```{r, echo=FALSE, fig.show='hide',results ='hide'}
+```{r grab_double_neg, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/spatial_metric_description.r')
 # Run the R script
@@ -167,7 +217,7 @@ suppressWarnings(suppressMessages({
 
 ```
 
-```{r, echo=FALSE}
+```{r display_double_neg, echo=FALSE}
 current_metric <- "DN2_Bcells"
 plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
@@ -177,7 +227,7 @@ knitr::include_graphics(plot_path)
 
 Below are the images of the double negative b-cell cosine similarity values..:
 
-```{r, echo=FALSE, fig.show='hide',results ='hide'}
+```{r grab_double_neg_cos, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/spatial_metric_description.r')
 # Run the R script
@@ -190,7 +240,7 @@ suppressWarnings(suppressMessages({
 
 ```
 
-```{r, echo=FALSE}
+```{r display_double_neg_cos, echo=FALSE}
 current_metric <- "dn_b_cos"
 plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
@@ -200,7 +250,7 @@ knitr::include_graphics(plot_path)
 
 Below are the images of the double negative b-cell atypical memory cell predictions..:
 
-```{r, echo=FALSE, fig.show='hide',results ='hide'}
+```{r grab_atm_pred_scores, echo=FALSE, fig.show='hide',results ='hide'}
 
 #it is neccesary to add the predition scores to the metadata prior to plotting
 object_path <- paste0(getwd(),'/objects/','seurat_objects.rds')
@@ -221,8 +271,38 @@ suppressWarnings(suppressMessages({
 
 ```
 
-```{r, echo=FALSE}
+```{r display_atm_pred_scores, echo=FALSE}
 current_metric <- "AtM_scores"
 plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
+
+# Cell interactions
+
+XXX TBD XXX
+
+# Moran's I analysis LSM4
+
+XXX include differential expression table XXX
+
+XXX as well as another gene sig XXX
+
+```{r grab_LSM4, echo=FALSE, fig.show='hide',results ='hide'}
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "LSM4"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric, gene = TRUE)  # Call the function defined in the script
+   }))
+
+```
+
+```{r display_LSM4, echo=FALSE}
+current_metric <- "LSM4"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
