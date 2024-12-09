@@ -37,9 +37,9 @@ p1 <- DimPlot(ref_data, group.by = "celltype", label = TRUE, cols = my36colors) 
 # Perform SCTransform normalization on the reference data
 # SCTransform normalizes gene expression data and reduces technical variation
 # The process also returns a set of variable genes that are used for downstream analyses
-ref_data <- SCTransform(ref_data, ncells = 3000, verbose = TRUE, vst.flavor = "v2", conserve.memory = TRUE, return.only.var.genes = FALSE) %>%
-    RunPCA(verbose = FALSE) %>%          # Run PCA to reduce dimensionality after SCTransform
-    RunUMAP(dims = 1:30)                 # Run UMAP on the first 30 principal components for visualization
+ref_data <- SCTransform(ref_data, ncells = 3000, verbose = TRUE, vst.flavor = "v2", conserve.memory = TRUE, return.only.var.genes = TRUE) %>%
+    RunPCA(verbose = FALSE, npcs = 15) %>%          # Run PCA to reduce dimensionality after SCTransform
+    RunUMAP(dims = 1:15, n.neighbors = 20, min.dist = 0.3)                 # Run UMAP on the first 30 principal components for visualization
 
 # Save the transformed reference dataset to an RDS file for future use
 # This allows us to re-use the transformed data without having to reprocess it
