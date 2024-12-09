@@ -7,7 +7,7 @@ suppressPackageStartupMessages({
   library(dplyr)
 })
 
-spatial_metrics <- function(current_metric){
+spatial_metrics <- function(current_metric, gene = FALSE){
     
     object_path <- paste0(getwd(),'/objects/','seurat_objects.rds')
     seurat_objects <- readRDS(object_path)
@@ -67,8 +67,18 @@ spatial_metrics <- function(current_metric){
     options(repr.plot.width = 7, repr.plot.height = 7)  # This will make the plot twice as wide
     
     # Combine data into a dataframe, accounting for different sizes
-    pre_data <- pre[[column_name]]
-    post_data <- post[[column_name]]
+
+    if (gene) {
+        # if a gene is being, use the expression data
+        pre_data_gene_exp <- GetAssayData(pre,layer = c("scale.data"))
+        post_data_gene_exp <- GetAssayData(post,layer = c("scale.data"))
+        pre_data <- pre_data_gene_exp[column_name,]
+        post_data <- post_data_gene_exp[column_name,]
+    } else {
+            # otherwise, use the metadata
+        pre_data <- pre[[column_name]]
+        post_data <- post[[column_name]]
+    }
     
     df <- data.frame(value = rbind(pre_data, post_data),
                     group = factor(c(rep("Pre", length(unlist(pre_data))),rep("Post", length(unlist(post_data))))))
@@ -77,10 +87,10 @@ spatial_metrics <- function(current_metric){
     
     # # Plot with ggplot
     dist_plot <- ggplot(df, aes(x = value, fill = group)) + 
-      geom_density(alpha = 0.5) + 
-      labs(title = "Density Plot of Pre and Post Groups", x = "Value", y = "Density") +
-      scale_fill_manual(values = c("red", "blue")) +
-      theme_minimal()
+    geom_density(alpha = 0.5) + 
+    labs(title = "Density Plot of Pre and Post Groups", x = "Value", y = "Density") +
+    scale_fill_manual(values = c("red", "blue")) +
+    theme_minimal()
     
     # Define the feature to analyze
     current_obs <- current_metric
