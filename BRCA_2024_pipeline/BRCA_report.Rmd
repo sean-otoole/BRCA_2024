@@ -245,13 +245,9 @@ knitr::include_graphics(plot_path)
 
 These gene signature scores do not necessarily represent the ground truth when assessing the enrichment of this specific B-cell population, so I wanted to use additional metrics. Below, I calculate a cosine similarity score, as described previously in this report. The score is based on a previously published study ([Ma et al., 2024](https://www.science.org/doi/abs/10.1126/science.adj4857)). Directly below, I show a replication of Figure 1B from this paper (on the left). Importantly, the relevant B-cell population is labeled B.09.DUSP4+AtM, which was used to probe for double-negative B-cells.
 
-
-
-
-```{r display_Ma_2024, echo=FALSE}
-current_metric <- "Goff_Agpresentation"
-plot_path <- paste0(getwd(), '/figures/', current_metric, 'ma_et_al_umaps.png')
-knitr::include_graphics(plot_path)
+```{r display_fig_ma_et_al, echo=FALSE}
+qupath_outlines <- paste0(getwd(), '/figures/ma_et_al_umaps.png')
+knitr::include_graphics(qupath_outlines)
 ```
 
 There were no clear differences between samples when examining the cosine similarity scores for the double-negative B-cell population derived from the Ma et al. dataset.
