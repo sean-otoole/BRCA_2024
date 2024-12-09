@@ -1,5 +1,5 @@
 ---
-title: "Investigation of the double-negative/atypical memory b-cell subtype in pre- and post-menopausal breast cancer samples"
+title: "Investigation of the double-negative/atypical memory b-cell subtype in pre- and postmenopausal breast cancer samples"
 author: "Sean O'Toole"
 date: "`r Sys.Date()`"
 output: 
@@ -128,7 +128,7 @@ celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png'
 knitr::include_graphics(celltypist_bar_chart)
 ```
 
-XXX I can simply the categories to make things more clear ###
+Additionally, we can assess the extent of immune and vascular cell-driven invasion in each tumor by simplifying our cell type categories into two groups: epithelial cells and all other cell types, which include endothelial and immune cells. This visualization (shown below) reveals greater variability within the postmenopausal samples. This variance will be a recurring theme throughout the analysis, as it ultimately leads to many trends and metrics being inconclusive.
 
 ```{r display_bar_summary_simple, echo=FALSE}
 celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist_simple.png')
@@ -137,9 +137,22 @@ knitr::include_graphics(celltypist_bar_chart)
 
 # Examination of gene signatures
 
-XXX explanation of gene sigs XXX
+Given that each spot on our Visium slides typically contains a mix of cell types, it is advantageous to examine how the enrichment of gene signatures associated with different cell types varies across spots. I have applied the approach outlined in [AUCell](https://www.bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html) to analyze changes in gene signatures between conditions. While the AUCell package is written in R, I have reimplemented the core method in Python for this pipeline (see pyAUCell.py in the project codebase). This method is also well-suited for single-cell datasets, which share many challenges with NGS-based spatial sequencing data. A previous review ([eLife](https://elifesciences.org/articles/71994)) highlights that AUCell is less sensitive to various biases compared to other gene signature methods.
 
-Here is one interesting gene sig:
+In brief, AUCell ranks gene expression within each cell (or spot) and determines how many genes from a given signature exceed a specific ranking threshold (e.g., top 5%). It then calculates the Area Under the Curve (AUC) for a plot where the x-axis represents gene rank and the y-axis is the cumulative distribution of signature genes at each rank. The result is normalized to the maximum AUC.
+
+Of high interest in our case is a gene signature indidcative of double-negative b-cells which corresponds to the following list of genes:
+
+```{r get_sigs,echo=FALSE, fig.show='hide',results ='hide'}
+object_path <- paste0(getwd(),'/gene_signatures/','all_signature_list_symbol.Rds')
+signatures <- readRDS(object_path)
+```
+
+```{r display_sig}
+print(signatures$DN2_Bcells)
+```
+
+This gene signature will be explored in more detail later. For now, I want to highlight two other signatures that differ between the sample sets. The first relates to natural killer cells. The figure below visualizes the signature scores across all samples (top), compares their distributions (bottom left), and displays group averages for both signature scores (bottom middle) and Moran's I values. Moran's I measures spatial autocorrelation: values near 1 indicate high spatial correlation, while values near -1 indicate spatial anti-correlation.
 
 ```{r describe_goffnk, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
@@ -160,7 +173,7 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-XXX as well as another gene sig XXX
+The other gene signature of interest is related to XXX antigen presentation  XXX. In both cases, the distributions of the signature values differ. However, when averaging within samples and performing a standard t-test, the significance is lost. Despite this, the observed trend suggests that an increased sample size may potentially reveal significant differences.
 
 ```{r describe_Goff_Agpresentation, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
@@ -181,8 +194,13 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-
 # Correlation of gene signatures with cell type identities
+
+I examined a number of gene signatures in addition to the two highlighted above. To better understand potential differences between pre- and postmenopausal samples, I investigated how the enrichment of these various gene signatures might change as a function of the cell types embedded within each spot. In other words, I examined how well the double-negative B-cell signature correlates with spots assigned to B-cells. A high correlation would suggest that many B-cell-containing spots are highly enriched for double-negative B-cells.
+
+To calculate the correlation between signatures and cell identities, I used a previously published study on breast cancer using single-cell RNA sequencing ([Wu et al., 2021](https://www.nature.com/articles/s41588-021-00911-1))  to build a reference for each major cell type. I calculated an averaged expression vector for each cell type and computed the cosine similarity score for each averaged cell-type vector and each Visium spot using only highly variable genes. Cosine similarity is useful in this context because it does not rely on the magnitude of expression within samples, but rather on the angle, making it less sensitive to sequencing depth and technology than Pearson’s or Spearman’s correlation metrics.
+
+This analysis is summarized below for eiher the pre- or postmenopausal samples:
 
 ```{r display_gene_sign_type_correlation, echo=FALSE}
 pre_corr <- paste0(getwd(), '/figures/pre_correlations.png')
@@ -193,7 +211,7 @@ knitr::include_graphics(post_corr)
 
 # Comparison of samples with bulk RNA sequencing data
 
-XXX as you can see blah blah blah XXX
+Many of the analyses conducted here reveal interesting trends but are ultimately inconclusive. To better understand why, I compared the spatial transcriptomics samples to a previous bulk RNA sequencing dataset from breast cancer patients provided by Paolo Angelino. In brief, the analysis involved calculating Z-scores for the previously mentioned gene signatures in both spatial and bulk samples separately, combining them into a single matrix, and performing principal component analysis. The samples were then clustered using the k-means algorithm (k=2). The results, shown below, indicate that all bulk RNA sequencing samples segregate as expected (pre- or postmenopausal). However, two spatial samples—POST-06 and PRE-01—appear to cluster with the opposing condition. It’s unclear why this happens, but one possibility is greater measurement variance in the spatial samples. Alternatively, the more precise exclusion of non-tumor tissue in spatial samples or differences in sample collection could be factors. While it’s unclear how to incorporate this information into the analysis, I wanted to report it here for awareness.
 
 ```{r display_bulk_compar_plot, echo=FALSE}
 bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted_rotated_labels.png')
@@ -202,7 +220,7 @@ knitr::include_graphics(bulk_low_dim_plot)
 
 # Examination of the double negative b-cell gene signature across samples
 
-Below are the images of the double negative b-cell gene signature score:
+The main biological question this analysis aims to address is whether the presence of double-negative B-cells can explain differences in tumor properties between pre- and postmenopausal women. To investigate this, I examined a gene signature associated with double-negative B-cells (shown below). While there are slight differences in the distributions between the two conditions, the average gene signature scores and Moran's I values are not significantly different.
 
 ```{r grab_double_neg, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
@@ -225,7 +243,19 @@ knitr::include_graphics(plot_path)
 
 # Examination of the atypical cosine similarity across samples, based on Ma et al 2024
 
-Below are the images of the double negative b-cell cosine similarity values..:
+These gene signature scores do not necessarily represent the ground truth when assessing the enrichment of this specific B-cell population, so I wanted to use additional metrics. Below, I calculate a cosine similarity score, as described previously in this report. The score is based on a previously published study ([Ma et al., 2024](https://www.science.org/doi/abs/10.1126/science.adj4857)). Directly below, I show a replication of Figure 1B from this paper (on the left). Importantly, the relevant B-cell population is labeled B.09.DUSP4+AtM, which was used to probe for double-negative B-cells.
+
+
+
+
+```{r display_Ma_2024, echo=FALSE}
+current_metric <- "Goff_Agpresentation"
+plot_path <- paste0(getwd(), '/figures/', current_metric, 'ma_et_al_umaps.png')
+knitr::include_graphics(plot_path)
+```
+
+There were no clear differences between samples when examining the cosine similarity scores for the double-negative B-cell population derived from the Ma et al. dataset.
+
 
 ```{r grab_double_neg_cos, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
@@ -248,7 +278,7 @@ knitr::include_graphics(plot_path)
 
 # Examination of the atypical memory cell prediction score across samples, based on Ma et a 2024
 
-Below are the images of the double negative b-cell atypical memory cell predictions..:
+Additionally, I did not observe any differences after running an XXX integration using Seurat, as described in XXX.
 
 ```{r grab_atm_pred_scores, echo=FALSE, fig.show='hide',results ='hide'}
 
@@ -281,18 +311,18 @@ knitr::include_graphics(plot_path)
 
 XXX TBD XXX
 
-# Moran's I analysis LSM4
+# Relevant genes
 
 XXX include differential expression table XXX
 
 XXX as well as another gene sig XXX
 
-```{r grab_LSM4, echo=FALSE, fig.show='hide',results ='hide'}
+```{r grab_Gene, echo=FALSE, fig.show='hide',results ='hide'}
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/spatial_metric_description.r')
 # Run the R script
 source(script_path)
-current_metric <- "LSM4"
+current_metric <- "FCRL5"
 
 suppressWarnings(suppressMessages({
        spatial_metrics(current_metric, gene = TRUE)  # Call the function defined in the script
@@ -301,7 +331,7 @@ suppressWarnings(suppressMessages({
 ```
 
 ```{r display_LSM4, echo=FALSE}
-current_metric <- "LSM4"
+current_metric <- "FCRL5"
 plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```

@@ -70,8 +70,8 @@ spatial_metrics <- function(current_metric, gene = FALSE){
 
     if (gene) {
         # if a gene is being, use the expression data
-        pre_data_gene_exp <- GetAssayData(pre,layer = c("scale.data"))
-        post_data_gene_exp <- GetAssayData(post,layer = c("scale.data"))
+        pre_data_gene_exp <- GetAssayData(pre,layer = c("data"))
+        post_data_gene_exp <- GetAssayData(post,layer = c("data"))
         pre_data <- pre_data_gene_exp[column_name,]
         post_data <- post_data_gene_exp[column_name,]
     } else {
