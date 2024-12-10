@@ -19,6 +19,8 @@ ref_data_dir <- paste0(getwd(), '/references/zenodo.11468564/scRNA_data/panB_scR
 # Load the reference dataset from the specified directory (single-cell RNA-seq data)
 ref_data <- readRDS(ref_data_dir)
 
+ref_data@meta.data[is.na(ref_data@meta.data)] <- 0   #get rid of NA values
+
 # Define a custom color palette with 36 colors for visualizing different cell types
 # This will help differentiate the cell types in the UMAP plot
 my36colors <- c('#E5D2DD', '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476D87',
@@ -37,9 +39,10 @@ p1 <- DimPlot(ref_data, group.by = "celltype", label = TRUE, cols = my36colors) 
 # Perform SCTransform normalization on the reference data
 # SCTransform normalizes gene expression data and reduces technical variation
 # The process also returns a set of variable genes that are used for downstream analyses
-ref_data <- SCTransform(ref_data, ncells = 3000, verbose = TRUE, vst.flavor = "v2", conserve.memory = TRUE, return.only.var.genes = TRUE) %>%
-    RunPCA(verbose = FALSE, npcs = 15) %>%          # Run PCA to reduce dimensionality after SCTransform
-    RunUMAP(dims = 1:15, n.neighbors = 20, min.dist = 0.3)                 # Run UMAP on the first 30 principal components for visualization
+ref_data <- SCTransform(ref_data, ncells = 5000, verbose = TRUE, vst.flavor = "v2", conserve.memory = TRUE, return.only.var.genes = TRUE, assay = 'RNA',
+                       vars.to.regress = c('percent.mt','DIG.Score1','S.Score','G2M.Score')) %>%
+    RunPCA(verbose = FALSE, npcs = 50) %>%          # Run PCA to reduce dimensionality after SCTransform
+    RunUMAP(dims = 1:50, n.neighbors = 20, min.dist = 0.3)                 # Run UMAP on the first 30 principal components for visualization
 
 # Save the transformed reference dataset to an RDS file for future use
 # This allows us to re-use the transformed data without having to reprocess it
