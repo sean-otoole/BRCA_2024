@@ -36,13 +36,33 @@ p1 <- DimPlot(ref_data, group.by = "celltype", label = TRUE, cols = my36colors) 
   NoLegend() +                          # Remove the legend for clearer visualization
   ggtitle("Before SCTransform")         # Add a title to the plot
 
-# Perform SCTransform normalization on the reference data
-# SCTransform normalizes gene expression data and reduces technical variation
-# The process also returns a set of variable genes that are used for downstream analyses
-ref_data <- SCTransform(ref_data, ncells = 5000, verbose = TRUE, vst.flavor = "v2", conserve.memory = TRUE, return.only.var.genes = TRUE, assay = 'RNA',
-                       vars.to.regress = c('percent.mt','DIG.Score1','S.Score','G2M.Score')) %>%
-    RunPCA(verbose = FALSE, npcs = 50) %>%          # Run PCA to reduce dimensionality after SCTransform
-    RunUMAP(dims = 1:50, n.neighbors = 20, min.dist = 0.3)                 # Run UMAP on the first 30 principal components for visualization
+# Perform SCTransform normalization, regressing out specified variables (e.g., technical and patient-specific factors)
+metadata <- ref_data[[]]
+
+# Create patient-specific dummy variables to account for batch effects
+patient_dummies <- model.matrix(~ patient - 1, data = metadata)
+patient_dummies_df <- as.data.frame(patient_dummies)
+
+# Add patient dummies to Seurat metadata
+ref_data@meta.data <- cbind(ref_data@meta.data, patient_dummies_df)
+
+# Specify variables to regress out (technical factors + patient dummies)
+current_reg_vars <- c('percent.mt','DIG.Score1','S.Score','nFeature_RNA','nCount_RNA','G2M.Score')
+current_reg_vars <- append(current_reg_vars, colnames(patient_dummies_df))  # Add patient dummies
+
+# Normalize data, regress out unwanted variables, and select top variable genes
+ref_data <- SCTransform(ref_data, 
+                        ncells = 5000, 
+                        verbose = TRUE, 
+                        vst.flavor = "v1", 
+                        conserve.memory = TRUE, 
+                        return.only.var.genes = TRUE, 
+                        assay = 'RNA',
+                        vars.to.regress = current_reg_vars, 
+                        clip.range = c(-4, 4), 
+                        variable.features.n = 3000) %>% 
+  RunPCA(verbose = FALSE, npcs = 30) %>%  # Run PCA for dimensionality reduction
+  RunUMAP(dims = 1:30, n.neighbors = 20, min.dist = 0.1)  # Perform UMAP visualization
 
 # Save the transformed reference dataset to an RDS file for future use
 # This allows us to re-use the transformed data without having to reprocess it
