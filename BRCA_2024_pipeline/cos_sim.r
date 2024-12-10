@@ -58,14 +58,14 @@ b_ref <- FindVariableFeatures(b_ref, selection.method = "vst", nfeatures = 2000)
 b_features <- VariableFeatures(b_ref)
 
 ## generate a psuedobulk dataframe where the rows are the HVGs and the columns are cell type
-pseudo_b_ref <- AggregateExpression(b_ref, features = b_features, assays = "RNA", return.seurat = T, group.by = "celltype")
-b_ref_matrix <- GetAssayData(pseudo_b_ref, assay = "RNA", slot = "data")
+pseudo_b_ref <- AggregateExpression(b_ref, features = b_features, assays = "SCT", return.seurat = T, group.by = "celltype")
+b_ref_matrix <- GetAssayData(pseudo_b_ref, assay = "SCT", slot = "data")
 
 ## import the seurat processed data
 visium_path <- paste0(getwd(), '/objects/seurat_objects.rds')
 
 visium_merge <- readRDS(visium_path)
-visium_matrix <- GetAssayData(visium_merge, assay = "SCT", slot = "scale.data")
+visium_matrix <- GetAssayData(visium_merge, assay = "SCT", slot = "data")
 overlapping_genes <- intersect(rownames(visium_matrix),rownames(b_ref_matrix))
 print(length(overlapping_genes))  # will need to expand the number genes for the SCT transformation
 
