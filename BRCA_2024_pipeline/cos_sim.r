@@ -74,16 +74,16 @@ visium_matrix_overlap <- visium_matrix[overlapping_genes,]
 b_ref_matrix_overlap <- b_ref_matrix[overlapping_genes,]
 
 dn_b <- b_ref_matrix_overlap[,'B.09.DUSP4+AtM'] 
-naive_b <- b_ref_matrix_overlap[,'B.01.TCL1A+naiveB'] 
-just_b <- b_ref_matrix_overlap[,'B.02.IFIT3+B'] 
+# naive_b <- b_ref_matrix_overlap[,'B.01.TCL1A+naiveB'] 
+# just_b <- b_ref_matrix_overlap[,'B.02.IFIT3+B'] 
 
 ## calculate cosine similarity for each location and add it to the seurat objects
 dn_b_cell_cos <- calculate_cosine_similarity(visium_matrix_overlap,dn_b)
-naive_b_cell_cos <- calculate_cosine_similarity(visium_matrix_overlap,naive_b)
-just_b_cell_cos <- calculate_cosine_similarity(visium_matrix_overlap,just_b)
+# naive_b_cell_cos <- calculate_cosine_similarity(visium_matrix_overlap,naive_b)
+# just_b_cell_cos <- calculate_cosine_similarity(visium_matrix_overlap,just_b)
 
 visium_merge$dn_b_cos <- dn_b_cell_cos
-visium_merge$naive_b_cell_cos <- naive_b_cell_cos
-visium_merge$just_b_cell_cos <- just_b_cell_cos
+# visium_merge$naive_b_cell_cos <- naive_b_cell_cos
+# visium_merge$just_b_cell_cos <- just_b_cell_cos
 
 saveRDS(visium_merge,visium_path)
