@@ -305,10 +305,15 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
+# Conclusions
+
+Although there are differences between these sample sets regarding the testing for enrichment of double negative B-cells, no strong conclusions can currently be drawn. Much of this is likely due to the high levels of variance observed among the postmenopausal samples. Additionally, in some cases, sample quality (e.g., POST-11) may have been a limiting factor. Furthermore, the fact that some samples appear to cluster with the opposing condition (e.g., POST-06 and PRE-01) raises concern. However, there is still potential to extract valuable information from these datasets, as evidenced by the clear trends in some of the gene signatures we tested (see above). Further analyses examining differential expression or spatial localization patterns of genes, as well as other metrics, could potentially provide a clearer picture. Although such results may not necessarily indicate changes in B-cell subtype distributions, they may point to other avenues of investigation. Additionally, even if the quantity and localization patterns of double negative B-cells are similar between conditions, it does not necessarily imply that the interactions of this cell type with the tissue are identical. An analysis of cell-cell interactions might provide more insight.
+
 # Other Potential Analyses
 
 This report is not exhaustive, and there are some avenues that were not fully addressed. However, depending on the preferences of those involved in the project, the following analyses could still be pursued:
 
 * Examination of differentially expressed genes between groups
 * Investigation of spatially differential genes between groups
+* Investigation of other subtypes (aside from the double negative b-cell population)
 * Analysis of cell-to-cell interactions focused on B-cell subtypes, i.e., exploring whether the interaction network differs between conditions
