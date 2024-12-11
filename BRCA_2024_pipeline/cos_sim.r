@@ -54,7 +54,7 @@ b_cell_types_only <- unique_celltypes[c(1:9,12,13)]
 b_ref <- subset(data, subset = celltype %in% b_cell_types_only)
 
 ## select the highly variable features
-b_ref <- FindVariableFeatures(b_ref, selection.method = "vst", nfeatures = 2000)
+b_ref <- FindVariableFeatures(b_ref, selection.method = "vst", nfeatures = 1000)
 b_features <- VariableFeatures(b_ref)
 
 ## generate a psuedobulk dataframe where the rows are the HVGs and the columns are cell type
@@ -76,7 +76,6 @@ b_ref_matrix_overlap <- b_ref_matrix[overlapping_genes,]
 dn_b <- b_ref_matrix_overlap[,'B.09.DUSP4+AtM'] 
 naive_b <- b_ref_matrix_overlap[,'B.01.TCL1A+naiveB'] 
 just_b <- b_ref_matrix_overlap[,'B.02.IFIT3+B'] 
-
 
 ## calculate cosine similarity for each location and add it to the seurat objects
 dn_b_cell_cos <- calculate_cosine_similarity(visium_matrix_overlap,dn_b)
