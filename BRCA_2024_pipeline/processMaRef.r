@@ -6,7 +6,7 @@ library(ggplot2)    # For creating and customizing plots (ggtitle comes from ggp
 library(future)     # For parallel processing to improve computational efficiency
 
 # Set maximum global memory size to 30 GB for future operations (e.g., large data objects)
-options(future.globals.maxSize = 150 * 1024^3)  # 100 GiB limit for globals
+options(future.globals.maxSize = 50 * 1024^3)  # 100 GiB limit for globals
 
 # Set up parallel processing with 2 workers/cores to speed up computations
 #plan("multicore", workers = 1)  # Reduce the number of cores to 2 to reduce memory usage
@@ -20,6 +20,11 @@ ref_data_dir <- paste0(getwd(), '/references/zenodo.11468564/scRNA_data/panB_scR
 ref_data <- readRDS(ref_data_dir)
 
 ref_data@meta.data[is.na(ref_data@meta.data)] <- 0   #get rid of NA values
+
+# subset the data to improve performance
+set.seed(123)
+subset_cells <- sample(Cells(ref_data), 100000)  # Subset 1000 random cells
+ref_data <- subset(ref_data, cells = subset_cells)
 
 # Define a custom color palette with 36 colors for visualizing different cell types
 # This will help differentiate the cell types in the UMAP plot
@@ -54,7 +59,7 @@ current_reg_vars <- append(current_reg_vars, colnames(patient_dummies_df))  # Ad
 ref_data <- SCTransform(ref_data, 
                         ncells = 5000, 
                         verbose = TRUE, 
-                        vst.flavor = "v1", 
+                        vst.flavor = "v2", 
                         conserve.memory = TRUE, 
                         return.only.var.genes = TRUE, 
                         assay = 'RNA',
