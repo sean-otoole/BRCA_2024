@@ -21,6 +21,7 @@ visium_data_path <- paste0(getwd(), '/objects/seurat_objects.rds')
 # Load the Visium dataset (spatial transcriptomics data)
 visium <- readRDS(visium_data_path)
 
+
 # Perform PCA (Principal Component Analysis) on the Visium dataset
 # This is done to reduce dimensionality and prepare for downstream analysis
 visium <- RunPCA(object = visium)

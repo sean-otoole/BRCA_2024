@@ -49,7 +49,7 @@ current_reg_vars <- gsub("-", "", current_reg_vars)
 
 # Perform SCTransform normalization on the Seurat object, regressing out specified variables
 # This step normalizes the data, corrects for unwanted technical variation, and selects highly variable genes
-ref_data <- SCTransform(seurat_objects, 
+seurat_objects <- SCTransform(seurat_objects, 
                         ncells = 3000,                # Use data from 3000 cells for normalization
                         verbose = TRUE,               # Show progress messages
                         vst.flavor = "v2",            # Use the 'v2' variant of the Variance Stabilizing Transformation (VST)
@@ -61,7 +61,7 @@ ref_data <- SCTransform(seurat_objects,
                         variable.features.n = 3000)   # Select the top 3000 variable genes for downstream analysis
 
 # Run PCA for dimensionality reduction, using the first 30 principal components (PCs)
-ref_data <- ref_data %>%
+seurat_objects <- seurat_objects %>%
   RunPCA(verbose = FALSE, npcs = 30) %>%  # Perform PCA (reduce to 30 PCs)
   
   # Perform UMAP (Uniform Manifold Approximation and Projection) for visualization
