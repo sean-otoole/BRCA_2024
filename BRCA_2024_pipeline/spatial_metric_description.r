@@ -89,8 +89,17 @@ spatial_metrics <- function(current_metric, gene = FALSE){
     dist_plot <- ggplot(df, aes(x = value, fill = group)) + 
     geom_density(alpha = 0.5) + 
     labs(title = "Density Plot of Pre and Post Groups", x = "Value", y = "Density") +
-    scale_fill_manual(values = c("red", "blue")) +
-    theme_minimal()
+      scale_color_manual(values = c('red','blue')) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 0, hjust = 0.5),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(color = "black"),
+        panel.border = element_blank(),
+        axis.ticks = element_line(color = "black"),
+        axis.ticks.length = unit(-0.1, "inches")
+      )
     
     # Define the feature to analyze
     current_obs <- current_metric
