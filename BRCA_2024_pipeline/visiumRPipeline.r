@@ -107,12 +107,12 @@ if (length(output) > 0) {
 # Read the Seurat objects
 seurat_objects <- readRDS(object_path)
 
-# Run the script to generate the reference data set (Ma et al. 2024)
+# Run the script for the similarity and EMD analysis based on the reference data set (Ma et al. 2024)
 # Path to the script
-process_Ma_Ref_path <- paste0(getwd(), '/processMaRef.r')
+ma_ref_analysis_path <- paste0(getwd(), '/ma_et_al_ref_analysis.r')
 
 # Execute the R script using system2 and capture the output and error messages
-output <- system2("Rscript", args = process_Ma_Ref_path, wait = TRUE, stdout = TRUE, stderr = TRUE)
+output <- system2("Rscript", args = ma_ref_analysis_path, wait = TRUE, stdout = TRUE, stderr = TRUE)
 
 # Capture the exit status of the executed R script
 exit_status <- attr(output, "status")
@@ -120,14 +120,14 @@ exit_status <- attr(output, "status")
 # Treat NULL exit status as non-critical and proceed
 if (is.null(exit_status) || exit_status == 0) {
     # If exit status is NULL or 0, consider the script executed successfully
-    print("ProcessMaRef.r script executed successfully or exit status is NULL (non-critical).")
+    print("ma_et_al_ref_analysis.r script executed successfully or exit status is NULL (non-critical).")
 } else {
     # If the exit status is non-zero, it indicates failure
-    print(paste("ProcessMaRef.r script execution failed with exit status:", exit_status))
+    print(paste("ma_et_al_ref_analysis.r script execution failed with exit status:", exit_status))
     cat("Error Message:\n", output)
     
     # Optionally, write the error log to a file for further inspection
-    error_log_path <- paste0(getwd(), '/error_log_processMaRef.txt')
+    error_log_path <- paste0(getwd(), '/error_log_ma_et_al_ref_analysis.txt')
     write(output, file = error_log_path)
     cat("The error log has been saved to:", error_log_path, "\n")
 }
@@ -138,66 +138,3 @@ if (length(output) > 0) {
 } else {
     cat("No output from the script.\n")
 }
-
-# Path to the R script you want to execute
-label_transfer_path <- paste0(getwd(), '/label_transfer_seurat.r')
-
-# Execute the R script using system2 and capture the output and error messages
-output <- system2("Rscript", args = label_transfer_path, wait = TRUE, stdout = TRUE, stderr = TRUE)
-
-# Capture the exit status of the executed R script
-exit_status <- attr(output, "status")
-
-# Treat NULL exit status as non-critical and proceed
-if (is.null(exit_status) || exit_status == 0) {
-    # If exit status is NULL or 0, consider the script executed successfully
-    print("label_transfer_seurat.r script executed successfully or exit status is NULL (non-critical).")
-} else {
-    # If the exit status is non-zero, it indicates failure
-    print(paste("label_transfer_seurat.r script execution failed with exit status:", exit_status))
-    cat("Error Message:\n", output)
-    
-    # Optionally, write the error log to a file for further inspection
-    error_log_path <- paste0(getwd(), '/error_log_label_transfer.txt')
-    write(output, file = error_log_path)
-    cat("The error log has been saved to:", error_log_path, "\n")
-}
-
-# Check for potential issues with stderr (if any errors were returned)
-if (length(output) > 0) {
-    cat("Script Output:\n", output, "\n")
-} else {
-    cat("No output from the script.\n")
-}
-
-# Calculate and add the cosine similarity scores
-process_cos_ma_ref <- paste0(getwd(), '/cos_sim.r')
-
-# Execute the R script using system2 and capture the output and error messages
-output <- system2("Rscript", args = process_cos_ma_ref, wait = TRUE, stdout = TRUE, stderr = TRUE)
-
-# Capture the exit status
-exit_status <- attr(output, "status") # Retrieve the exit status from the system2 output attributes
-
-# Treat NULL exit status as non-critical and proceed
-if (is.null(exit_status) || exit_status == 0) {
-    # If exit status is NULL or 0, consider the script executed successfully
-    print("cos_sim.r script executed successfully or exit status is NULL (non-critical).")
-} else {
-    # If the exit status is non-zero, it indicates failure
-    print(paste("cos_sim.r script execution failed with exit status:", exit_status))
-    cat("Error Message:\n", output)
-    
-    # Optionally, write the error log to a file for further inspection
-    error_log_path <- paste0(getwd(), '/error_log_cos_sim.txt')
-    write(output, file = error_log_path)
-    cat("The error log has been saved to:", error_log_path, "\n")
-}
-
-# Check for potential issues with stderr (if any errors were returned)
-if (length(output) > 0) {
-    cat("Script Output:\n", output, "\n")
-} else {
-    cat("No output from the script.\n")
-}
-

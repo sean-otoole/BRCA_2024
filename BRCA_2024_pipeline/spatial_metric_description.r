@@ -23,7 +23,9 @@ spatial_metrics <- function(current_metric, gene = FALSE){
     first_seurat_obj <- subset(seurat_objects, subset = sample %in% c(samples[1]))
     feature_data <- FetchData(first_seurat_obj, vars = current_metric)
     min_cut <- round(min(feature_data[[current_metric]], na.rm = TRUE),1)
+    min_cut <- min_cut * 0.95
     max_cut <- round(max(feature_data[[current_metric]], na.rm = TRUE),1)
+    max_cut <- max_cut * 1.05
     mid_point <- round(min_cut + (max_cut - min_cut)/2,1)
     
     # Loop through each sample and plot the spatial data
