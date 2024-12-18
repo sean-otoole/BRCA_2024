@@ -78,7 +78,7 @@ ggsave(filename = output_path, plot = p1, width = 8, height = 8, dpi = 300)
 #############################################################################################################
 
 # Process and Compare Matrices
-ref_train <- FindVariableFeatures(ref_train, selection.method = "dispersion", nfeatures = 4000)
+ref_train <- FindVariableFeatures(ref_train, selection.method = "dispersion", nfeatures = 7000)
 ref_features <- VariableFeatures(ref_train)
 visium_path <- paste0(getwd(), '/objects/seurat_objects.rds')
 visium_merge <- readRDS(visium_path)
@@ -102,7 +102,8 @@ visium_matrix <- visium_matrix[overlapping_genes, ]
 pseudo_bulk_matrix <- pseudo_bulk_matrix[overlapping_genes, ]
 ref_test_matrix <- GetAssayData(ref_test, assay = "RNA", slot = "data")[overlapping_genes, ]
 
-saveRDS(overlapping_genes, file = '/results/overlapping_genes.rds')
+output_path <- paste0(getwd(), '/results/', 'overlapping_genes.rds')
+saveRDS(overlapping_genes, file = output_path)
 
 cat("Number of overlapping genes:", length(overlapping_genes), "\n")
 
@@ -127,14 +128,15 @@ dn_b_cell_cos <- calculate_cosine_similarity(ref_test_matrix, dn_b)
 ref_test[[dnb_cell_name]] <- dn_b_cell_cos
 
 # Set the celltype as factor and ensure the order
-Idents(ref_test) <- 'celltype'
 sorting_order <- sort(unique(ref_test$celltype))  # Sorting the unique celltypes
-ref_test$celltype <- factor(ref_test$celltype, levels = sorting_order)
+ref_test$celltype <- factor(ref_test$celltype, levels = sorting_order)  # Update factor levels
+Idents(ref_test) <- ref_test$celltype  # Synchronize Idents with updated factor levels
 
 # Generate the violin plot
 vp <- VlnPlot(ref_test, features = dnb_cell_name, cols = my36colors, pt.size = 0) +
   ggtitle("B.09.DUSP4+AtM Similarity Scores Across Celltypes (Test Set)") +  # Set title
   scale_x_discrete(limits = sorting_order) +  # Ensure x-axis categories are in correct order
+  guides(fill = guide_legend(order = 1)) +   # Make legend consistent with x-axis order
   theme(plot.margin = unit(c(1, 1, 1, 2), "cm"))  # Top, Right, Bottom, Left
 
 # Statistical Analysis: Pairwise Wilcoxon Test and Kruskal-Wallis Test
@@ -175,23 +177,74 @@ ggsave(filename = output_path_plot, plot = vp, width = 10, height = 8, dpi = 300
 #############################################################################################################
 
 # Earth Mover's Distance (EMD) Analysis
-results_df <- data.frame(cell_type = character(), earth_movers_distance = numeric(), p_value = numeric(), 
-                         stringsAsFactors = FALSE)
-for (type in colnames(pseudo_bulk_matrix)) {
-  emd_obs <- wasserstein1d(as.numeric(visium_merge[[type]]), as.numeric(pseudo_bulk_matrix[, type]))
-  results_df <- rbind(results_df, data.frame(cell_type = type, earth_movers_distance = emd_obs, 
-                                             p_value = runif(1)))  # Replace with permutation p-value logic
+
+# Initialize an empty data frame
+results_df <- data.frame(
+  cell_type = character(),       # For cell type names (character column)
+  earth_movers_distance = numeric(),  # For EMD values (numeric column)
+  p_value = numeric(),           # For p-values (numeric column)
+  stringsAsFactors = FALSE       # Prevent strings from being factors
+)
+
+for (type in colnames(pseudo_bulk_matrix)){
+
+pre_data <- pre[[type]]
+post_data <- post[[type]]
+
+vector1 <- as.numeric(unlist(pre_data))  # Flatten and convert pre_data
+vector2 <- as.numeric(unlist(post_data)) # Flatten and convert post_data
+
+# Compute the observed EMD
+emd_obs <- wasserstein1d(vector1, vector2)
+
+# Combine the two datasets
+combined_data <- c(vector1, vector2)
+
+# Number of permutations
+n_permutations <- 10000
+emd_permutations <- numeric(n_permutations)
+
+# Perform permutation test
+for (i in 1:n_permutations) {
+  # Resample the combined data to create two new groups (same size as original)
+  resampled_groups <- sample(combined_data, length(vector1))  # Resample for the "pre" group
+  resampled_post <- setdiff(combined_data, resampled_groups)  # The remaining data is the "post" group
+  
+  # Compute the EMD with resampled data
+  emd_permutations[i] <- wasserstein1d(resampled_groups, resampled_post)
+}
+
+# Calculate p-value (proportion of permuted EMDs greater than observed EMD)
+p_val <- mean(emd_permutations >= emd_obs)
+
+results_df <- rbind(results_df, data.frame(
+cell_type = type,
+earth_movers_distance = emd_obs,
+p_value = p_val))
 }
 
 # Save Results and Visualize
-saveRDS(results_df, file = '/results/eds_results_df.rds')
+
+output_path <- paste0(getwd(), '/results/', 'eds_results_df.rds')
+saveRDS(results_df, file = output_path)
 
 emd_plot <- ggplot(results_df, aes(x = cell_type, y = earth_movers_distance, color = cell_type)) +
   geom_point(position = position_jitter(width = 0.1, height = 0), size = 3) +
-  labs(title = "Earth Mover's Distance Comparison", x = "Cell Type", y = "EMD") +
-  scale_color_manual(values = my36colors) +
+  labs(title = "Earth Mover's Distance Comparison", 
+       x = "Cell Type", 
+       y = "EMD") +
+  scale_color_manual(values = my36colors) +  # Apply custom color palette
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    panel.border = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    axis.ticks.length = unit(-0.1, "inches")
+  )
+
 output_path <- paste0(getwd(), '/figures/', 'emd_plot.png')
 ggsave(filename = output_path, plot = emd_plot, width = 8, height = 8, dpi = 300)
 

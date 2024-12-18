@@ -7,8 +7,9 @@ output:
     theme: cayman
     toc: true
 params:
-  run_python_script: FALSE  # determines if the python pipeline will ran, or if the script relies on already stored objects
+  run_python_script: TRUE  # determines if the python pipeline will ran, or if the script relies on already stored objects
   run_R_script: TRUE # determines if the R pipeline will ran, or if the script relies on already stored objects
+  remake_figs: TRUE #will not rely on previously generated figures if TRUE
 ---
 
 <!--
@@ -37,16 +38,11 @@ if (params$run_R_script) {
   source('visiumRPipeline.r')
 }
 
-# Conditionally source the R coosine similarity analysis
-if (params$run_R_script) {
-  source('XXX.r')
-}
-
 ```
 
 # Initialization of the data pipeline in python and R
 
-The overall pipeline is implemented in both Python and R. Initially, the 10x Visium datasets are imported using the Squidpy and Scanpy packages. Redundant gene names within the dataset were made unique, and mitochondrial genes were identified based on their "MT-" prefix. Quality control (QC) included calculating the percentage of mitochondrial content, and excluding cells with greater than 10% mitochondrial content, also cells cells with fewer than 600 counts or fewer than 500 genes were filtered out. Genes expressed in fewer than 10 cells were also removed. After filtering, the data were normalized by scaling expression levels such that the overall expression count summed to 10,000, followed by log-transformation. Cell type annotations were obtained using the pre-trained CellTypist model (Immune_All_High), with majority voting to assign the most likely cell type to each cluster. The resulting AnnData objects contained gene expression, clustering, and cell type annotation information for downstream analysis.
+The overall pipeline is implemented in both Python and R. Initially, the 10x Visium datasets are imported using the Squidpy and Scanpy packages. Redundant gene names within the dataset were made unique, and mitochondrial genes were identified based on their "MT-" prefix. Quality control (QC) included calculating the percentage of mitochondrial content, and excluding cells with greater than 10% mitochondrial content, also cells cells with fewer than 600 counts or fewer than 500 genes were filtered out. Genes expressed in fewer than 10 cells were also removed. After filtering, the data were normalized by scaling expression levels such that the overall expression count summed to 10,000, followed by log-transformation. Cell type annotations were obtained using the pre-trained  [CellTypist](https://www.celltypist.org/) model (Immune_All_High), with majority voting to assign the most likely cell type to each cluster. The resulting AnnData objects contained gene expression, clustering, and cell type annotation information for downstream analysis.
 
 Subsequently, the samples were filtered based on binarized images derived from the recommendations of pathologists who outlined the location of the tumor in each slide. Exceptionally, in one sample (Post-06), a portion of the tumor was discarded due to abnormal morphology, although this did not substantialy impact the results. All samples were then converted to Seurat objects and further processed in R. Additional metrics were calculated and incorporated into the Seurat objects for further analysis, including data integration-related metrics with multiple reference datasets and numerous gene signature scores as well as appling an additional normalization (SCTransform).
 
@@ -68,9 +64,11 @@ knitr::include_graphics(example_segmentation_path_pre1)
 
 # Sample quality metrics
 
-Below, several quality metrics are displayed, which include the number of unique features (left), mitochondrial features (center), and the number of unique molecular identifiers mapping to the transcriptome for each of the datasets (right). Sample Post-11 had very low read counts compared to the other samples. In many instances, it could make sense to exclude this sample. However, its presence does not alter the conclusions of this report, so for the time being it has not bee excluded despite having a realtively low UMI count.
+Below, several quality metrics are displayed, which include the number of unique features (left), mitochondrial features (center), and the number of unique molecular identifiers mapping to the transcriptome for each of the datasets (right).
 
 ```{r get_summary_stats, echo=FALSE, fig.show='hide', results = 'hide'}
+if (params$remake_figs) {
+
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/summary_stats.r')
 # Run the R script
@@ -78,20 +76,20 @@ script_path <- paste0(getwd(), '/summary_stats.r')
 invisible({
 source(script_path)
 })
-
+}
 ```
-
 
 ```{r display_fig_summary, echo = FALSE}
 vln_plots <- paste0(getwd(),'/figures/','vlnplot_grid.png')
 knitr::include_graphics(vln_plots)
 ```
 
-# Verifying the veracity of celltypist assigned b-cell identitys
+# Corroborating the accuracy of the CellTypist-assigned b-cell identities
 
-In order to test the accuracy of the CellTypist-based cell type assignment, the cosine similarity scores were examined for several different cell types (including B-cells) using an average expression vector derived from each cell type group, taken from a reference dataset (Wu et al., 2021). As you can see, the cosine similarity scores for the B-cells (**panel A**) largely align with the B-cell type assignments from CellTypist (**panel B**). This comparison served two purposes. First, it enabled a sanity check for the CellTypist assignment. Additionally, the cosine similarity scores can more easily be correlated with other metrics, such as gene signature scores, to determine how cell type identity and gene signature scores may correlate.
+To test the accuracy of the CellTypist-based cell type assignment, the cosine similarity scores were examined for several different cell types (including B-cells) using an average expression vector derived from each cell type group, taken from a reference dataset (Wu et al., 2021). As you can see, the cosine similarity scores for the B-cells (**panel A**) largely align with the B-cell type assignments from CellTypist (**panel B**). This comparison served two purposes. First, it enabled a sanity check for the CellTypist assignment. Additionally, the cosine similarity scores can more easily be correlated with other metrics, such as gene signature scores, to determine how cell type identity and gene signature scores may correlate.
 
 ```{r compare_celltypist_cos, message=FALSE, warning=FALSE, echo=FALSE}
+if (params$remake_figs) {
 # Load necessary library
 library(Seurat)
 library(patchwork)
@@ -104,7 +102,7 @@ seurat_objects <- readRDS(object_path)
 seurat_obj <- subset(seurat_objects, subset = sample %in% c('PRE-01'))
 
 # Generate the first plot
-plot_A <- SpatialFeaturePlot(seurat_obj, features = 'B.cells_cos_sim', 
+plot_A <- SpatialFeaturePlot(seurat_obj, features = 'Bcells_cos_sim', 
                              pt.size = 2, alpha = 0.8) +
   ggtitle("A") + # Add title "A" for labeling
   theme(legend.position = "bottom") # Move color bar to the bottom
@@ -118,35 +116,44 @@ plot_B <- SpatialDimPlot(seurat_obj, pt.size = 2, alpha = 0.8) +
 
 # Combine the plots into one figure in a row
 combined_plot <- plot_A | plot_B
+
+output_path <- paste0(getwd(),'/figures/','cos_celltypist.png')
+ggsave(filename = output_path, plot = combined_plot, width = 16, height = 12, dpi = 300)
+}
 ```
 
 ```{r display_celltypist_cos, echo=FALSE}
-print(combined_plot)
+cos_celltypist_fig_path <- paste0(getwd(), '/figures/cos_celltypist.png')
+knitr::include_graphics(cos_celltypist_fig_path)
 ```
 
-# Distribution of celltypist assigned cell types
+# Distribution of CellTypist-assigned cell types
 
-Below the distribution of cell types for each sample across a number of major relevant cell types is displayed, based on the CellTypist cell type assignment. Not all cell types were present across all samples. Although it should be noted that the absence of any given cell type label does not imply a total absence of that cell type within the sample. Each spot on the Visium slide is 55 microns in diameter. If we assume each cell has a diameter of 10 microns, then each spot likely contains approximately 22 cells (assuming all cells and spots are circular). This is also why calculating metrics such as cosine similarity or examining gene signatures may be important since they allow us to essentially deconvolute the data. Anyway, the major conclusion we can draw from the bar chart below is that there aren't any major or consistent cell type distribution patterns amongst samples.
+Below the cell type composition for each sample across the major relevant cell types is displayed, based on the CellTypist cell type assignment. Not all cell types were present across all samples. However, it should be noted that the absence of any given cell type label does not imply a total absence of that cell type. Each spot on the Visium slide is 55 microns in diameter. If we assume each cell has a diameter of 10 microns, then each spot likely contains approximately 22 cells (assuming all cells and spots are circular). This is also why calculating metrics such as cosine similarity or examining gene signatures may be important since they allow for deconvoluting the data. Despite these caveats, no major conclusions can be drawn about the enrichment of any specific cell population between samples.
 
 ```{r display_bar_summary, echo=FALSE}
 celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png')
 knitr::include_graphics(celltypist_bar_chart)
 ```
 
-Additionally, we can assess the extent of immune and vascular cell-driven invasion in each tumor by simplifying our cell type categories into two groups: epithelial cells and all other cell types, which include endothelial and immune cells. This visualization (shown below) reveals greater variability within the postmenopausal samples. This variance will be a recurring theme throughout the analysis, as it ultimately leads to many trends and metrics being inconclusive.
+Additionally, we can assess the extent of immune and vascular cell-driven invasion in each tumor by simplifying our cell type categories into two groups: epithelial cells and all other cell types, which include endothelial and immune cells. This visualization (shown below) reveals greater variability within the postmenopausal samples.
 
 ```{r display_bar_summary_simple, echo=FALSE}
 celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist_simple.png')
 knitr::include_graphics(celltypist_bar_chart)
 ```
 
+XXX We can also compare this variance... XXX
+
 # Examination of gene signatures
 
-Given that each spot on our Visium slides typically contains a mix of cell types, it is advantageous to examine how the enrichment of gene signatures associated with different cell types varies across spots. I have applied the approach outlined in [AUCell](https://www.bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html) to analyze changes in gene signatures between conditions. While the AUCell package is written in R, I have reimplemented the core method in Python for this pipeline (see pyAUCell.py in the project codebase). This method is also well-suited for single-cell datasets, which share many challenges with NGS-based spatial sequencing platforms. A previous review ([eLife](https://elifesciences.org/articles/71994)) highlights that AUCell is less sensitive to various biases compared to other gene signature methods which is why this particular method was implemented.
+Given that each spot on our Visium slides typically contains a mix of cell types, it was necessary to examine how gene signatures associated with different cell types varied across spots. Here the approach utilized is outlined in [AUCell](https://www.bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html) that was used to analyze changes in gene signatures between conditions. While the AUCell package is written in R, it was partially reimplemented for this analysis in Python for this pipeline (see pyAUCell.py in the project codebase). This method is also well-suited for single-cell datasets, which share many challenges with NGS-based spatial sequencing platforms. A previous review ([eLife](https://elifesciences.org/articles/71994)) highlights that AUCell is less sensitive to various biases compared to other gene signature methods which is why this particular method was implemented.
 
 In brief, AUCell ranks gene expression within each cell (or spot) and determines how many genes from a given signature exceed a specific ranking threshold (e.g., top 5%). It then calculates the Area Under the Curve (AUC) for a plot where the x-axis represents gene rank and the y-axis is the cumulative distribution of signature genes at each rank. The result is normalized to the maximum possible AUC for that gene signature.
 
-Of high interest in our case is a gene signature indidcative of double-negative b-cells which corresponds to the following list of genes:
+## Examination of the double negative b-cell gene signature across samples
+
+Of high interest in our case is a gene signature indicative of double-negative b-cells which corresponds to the following list of genes:
 
 ```{r get_sigs,echo=FALSE, fig.show='hide',results ='hide'}
 object_path <- paste0(getwd(),'/gene_signatures/','all_signature_list_symbol.Rds')
@@ -157,32 +164,57 @@ signatures <- readRDS(object_path)
 print(signatures$DN2_Bcells)
 ```
 
-This gene signature will be explored in more detail later. For now, I want to highlight two other signatures that differ between the sample sets. The first relates to natural killer cells. The figure below visualizes the signature scores across all samples (top), compares their distributions (bottom left), and displays group averages for both signature scores (bottom middle) and Moran's I values. Moran's I measures spatial autocorrelation: values near 1 indicate high spatial correlation, while values near -1 indicate spatial anti-correlation.
+A summary of how this gene signature is changing across conditions is shown below. In the top half of the figure are each of the Visium samples with a heatmap of the gene signature superimposed on top of the samples' images. In the bottom left portion of the figure are the normalized densities for the distribution of values in each condition (pre- vs. postmenopausal) across spots for the double-negative B cell signature. In the lower middle panel is a scatter plot comparison of the averaged score value for each sample. Finally, within the lower right panel is the Moran's I value across samples. Moran's I refers to the spatial autocorrelation; the value ranges from -1 to 1, with 1 exemplifying a high degree of spatial correlation within space. There were no major differences between the sample sets due to a high degree of variance, especially within the postmenopausal samples.
 
-```{r describe_goffnk, echo=FALSE, fig.show='hide',results ='hide'}
+```{r grab_double_neg, echo=FALSE, fig.show='hide',results ='hide'}
+if (params$remake_figs) {
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/spatial_metric_description.r')
 # Run the R script
 source(script_path)
-current_metric <- "Goff_NK.cells"
+current_metric <- "DN2_Bcells"
 
 suppressWarnings(suppressMessages({
        spatial_metrics(current_metric)  # Call the function defined in the script
    }))
-
+}
 ```
 
-```{r display_goffnk_plot, echo=FALSE}
-current_metric <- "Goff_NK.cells"
+```{r display_double_neg_sct, echo=FALSE}
+current_metric <- "DN2_Bcells"
 plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-The other gene signature of interest is related to antigen presentation. In both cases, the distributions of the signature values differ. However, when averaging within samples and performing a standard t-test, statistical significance is lost. Despite this, the observed trend suggests that increasing the sample size could potentially reveal significant differences.
+## Examination of additional potentially relevant gene signatures
 
-It is important to note that both distributions display bimodality, which may necessitate a different analytical approach. One option would be to set a threshold value and examine the frequency of cells classified as "gene signature positive," then compare these frequencies across samples. This method has not yet been implemented in the analysis, but if these signatures are deemed of particular interest, I can make the necessary adjustments.
+Although not directly relevant to the investigation of the double-negative B-cell subtype, several other gene signatures showed reasonably large differences between conditions. The first relates to natural killer cells. A summary of the results for this gene signature is displayed below in a manner consistent with the previous figure. While the sample-averaged values compared between conditions are not significant, the overall difference between distributions is most likely significant. However, I did not investigate this further, as it was not the focus of this analysis. I simply wanted to highlight it as a potential new area of investigation.
+
+```{r describe_goffnk, echo=FALSE, fig.show='hide',results ='hide'}
+
+if (params$remake_figs) {
+# Specify the path to the R script
+script_path <- paste0(getwd(), '/spatial_metric_description.r')
+# Run the R script
+source(script_path)
+current_metric <- "Goff_NK cells"
+
+suppressWarnings(suppressMessages({
+       spatial_metrics(current_metric)  # Call the function defined in the script
+   }))
+}
+```
+
+```{r display_goffnk_plot, echo=FALSE}
+current_metric <- "Goff_NK cells"
+plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
+knitr::include_graphics(plot_path)
+```
+
+The other gene signature of interest is related to antigen presentation. The results associated with this signature are plotted similarly.
 
 ```{r describe_Goff_Agpresentation, echo=FALSE, fig.show='hide',results ='hide'}
+if (params$remake_figs) {
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/spatial_metric_description.r')
 # Run the R script
@@ -192,7 +224,7 @@ current_metric <- "Goff_Agpresentation"
 suppressWarnings(suppressMessages({
        spatial_metrics(current_metric)  # Call the function defined in the script
    }))
-
+}
 ```
 
 ```{r display_Goff_Agpresentation, echo=FALSE}
@@ -201,9 +233,11 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
+It is important to note that both distributions exhibit bimodality, which may require a different analytical approach. One option could be to set a threshold value, classify cells as 'gene signature positive,' and then compare these frequencies across samples. This method has not yet been implemented in the analysis; however, if these signatures are considered particularly significant, further adjustments to the analysis can be made.
+
 # Correlation of gene signatures with cell type identities
 
-I examined a number of gene signatures in addition to the two highlighted above. To better understand potential differences between pre- and postmenopausal samples, I investigated how the enrichment of these various gene signatures might change as a function of the majority cell type embedded within each spot. For example, I examined how well the double-negative B-cell signature correlates with spots assigned to B-cells. A high correlation would suggest that many B-cell-containing spots are highly enriched for double-negative B-cells.
+To better understand potential differences between pre- and postmenopausal samples, I investigated how the enrichment of these various gene signatures might change as a function of the majority cell type embedded within each spot. For example, I examined how well the double-negative B-cell signature correlates with spots assigned to B-cells. A high correlation would suggest that many B-cell-containing spots are highly enriched for double-negative B-cells.
 
 To calculate the correlation between signatures and cell identities, I used a previously published single-cell RNA sequencing breast cancer study ([Wu et al., 2021](https://www.nature.com/articles/s41588-021-00911-1)) to build a reference vector for each major cell type. Reference vectors were calculated by averaging the expression of highly variable genes for each cell type, such that each major cell type had a single average expression vector. Then, the cosine similarity score was calculated for each Visium spot and cell type expression vector. Cosine similarity is useful in this context because it does not rely on the magnitude of expression within samples but rather on the angle, making it less sensitive to sequencing depth and technology than Pearson’s or Spearman’s correlation metrics.
 
@@ -218,34 +252,11 @@ knitr::include_graphics(post_corr)
 
 # Comparison of samples with bulk RNA sequencing data
 
-Many of the analyses conducted here reveal interesting trends but are ultimately inconclusive. To better understand why, I compared the spatial transcriptomics samples to a previous bulk RNA sequencing dataset from breast cancer patients provided by Paolo Angelino. In brief, the analysis involved calculating Z-scores for the previously mentioned gene signatures in both spatial and bulk samples separately, combining them into a single matrix, and performing principal component analysis (nPC = 2). The samples were then clustered using the k-means algorithm (k=2). The results, shown below, indicate that all bulk RNA sequencing samples segregate as expected (pre- or postmenopausal). However, two spatial samples—POST-06 and PRE-01—appear to cluster with the opposing condition. It’s unclear why this happens, but one possibility is greater measurement variance in the spatial samples. Alternatively, the more precise exclusion of non-tumor tissue in spatial samples or differences in sample collection could be factors. While it’s unclear how to incorporate this information into the analysis, I wanted to report it here for awareness.
+Many of the analyses conducted here reveal interesting trends but are ultimately inconclusive. To better understand why, I compared the spatial transcriptomics samples to a previous bulk RNA sequencing dataset from breast cancer patients provided by Paolo Angelino. In brief, the analysis involved calculating Z-scores for the previously mentioned gene signatures in both spatial and bulk samples separately, combining them into a single matrix; and performing a principal component analysis (nPC = 2). The samples were then clustered using the k-means algorithm (k=2). The results (shown below) indicate that all bulk RNA sequencing samples segregate as expected (pre- or postmenopausal). However, two spatial samples, POST-06 and PRE-01, clustered with the opposing condition. It’s unclear why this happens, but one possibility is greater measurement variance in the spatial samples. Alternatively, the more precise exclusion of non-tumor tissue in spatial samples or differences in sample collection could be factors. Finally, this segregation pattern may only be due to natural sources of biological variation. While it’s unclear how to incorporate this information into the analysis, I wanted to report it here for awareness.
 
 ```{r display_bulk_compar_plot, echo=FALSE}
 bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted_rotated_labels.png')
 knitr::include_graphics(bulk_low_dim_plot)
-```
-
-# Examination of the double negative b-cell gene signature across samples
-
-The main biological question this analysis aims to address is whether the presence of double-negative B-cells can explain differences in tumor properties between pre- and postmenopausal women. To investigate this, I examined a gene signature associated with double-negative B-cells (shown below). While there are slight differences in the distributions between the two conditions, the average gene signature scores and Moran's I values are not significantly different.
-
-```{r grab_double_neg, echo=FALSE, fig.show='hide',results ='hide'}
-# Specify the path to the R script
-script_path <- paste0(getwd(), '/spatial_metric_description.r')
-# Run the R script
-source(script_path)
-current_metric <- "DN2_Bcells"
-
-suppressWarnings(suppressMessages({
-       spatial_metrics(current_metric)  # Call the function defined in the script
-   }))
-
-```
-
-```{r display_double_neg_sct, echo=FALSE}
-current_metric <- "DN2_Bcells"
-plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
-knitr::include_graphics(plot_path)
 ```
 
 # Similarity scoring based on the b-cell populations described in Ma et al. 2024
@@ -253,14 +264,16 @@ knitr::include_graphics(plot_path)
 These gene signature scores do not necessarily represent the ground truth when assessing the enrichment of this specific B-cell population, so I wanted to use additional metrics. Thus, I again calculated cosine similarity scores, as described previously in this report. However, this score calculation incorporated a previously published study ([Ma et al., 2024](https://www.science.org/doi/abs/10.1126/science.adj4857)), which largely focused on B-cell subtypes. Below, I show a replication of Figure 1B from this paper. Importantly, the relevant B-cell population is labeled as B.09.DUSP4+AtM, which was used to calculate the cosine similarity scores relevant to the double-negative B-cell population.
 
 ```{r display_fig_ma_et_al, echo=FALSE}
-qupath_outlines <- paste0(getwd(), '/figures/ref_umap.png')
-knitr::include_graphics(qupath_outlines)
+ref_umap <- paste0(getwd(), '/figures/ref_umap.png')
+knitr::include_graphics(ref_umap)
 ```
 
 Additionally, the cosine similarity was calculated by taking the averaged expression levels for the atypical memory cells from the Ma et al. paper and then calculating (which were derived the corrected normalized expression values from the SCTransform function after correcting for patient origin, mitochondrial percentage, and feature as well as total count per cell. Additionally, the expression vector only included highly variable genes within the Ma et. al data set. This averaged vector of highly variable genes was used for calculating the cosine similarity for each spot in the visium data set. The visium expression values were also corrected after adjusting for sample origin, mitochondrial percent, total features, and counts.
 When examining the cosine similarity scores for the double-negative B-cell population derived from the Ma et al. dataset (shown below), there were clear differences between samples. However, this metric disagrees with the other two metrics reported. It will likely require some further validation. Additionally, the lack of bimodality indicates that this metric is not specific enough, potentially due to poor gene feature selection.
 
 ```{r grab_double_neg_cos, echo=FALSE, fig.show='hide',results ='hide'}
+
+if (params$remake_figs) {
 # Specify the path to the R script
 script_path <- paste0(getwd(), '/spatial_metric_description.r')
 # Run the R script
@@ -270,6 +283,7 @@ current_metric <- "B.09.DUSP4+AtM"
 suppressWarnings(suppressMessages({
        spatial_metrics(current_metric)  # Call the function defined in the script
    }))
+}
 
 ```
 
@@ -288,7 +302,28 @@ plot_path <- paste0(getwd(), '/figures/', 'violin_cos_ref.png')
 knitr::include_graphics(plot_path)
 ```
 
+XXX
+
+```{r display_violin_stats, echo = FALSE}
+
+table_path <- paste0(getwd(), '/results/', 'dnb_violin_cell_statistics.csv')
+table_stats <- read.csv(table_path)
+table_stats$p_value <- format(table_stats$p_value, scientific = TRUE)
+table_stats$adjusted_p_value <- format(table_stats$adjusted_p_value, scientific = TRUE)
+# Display the table with knitr::kable
+knitr::kable(table_stats, caption = "Table: DNB Violin Cell Statistics with Scientific Notation")
+
+```
+
 ## Earth mover's distance analysis
+
+XXX
+
+
+```{r display_emds_plot, echo=FALSE}
+plot_path <- paste0(getwd(), '/figures/', 'emds_plot.png')
+knitr::include_graphics(plot_path)
+```
 
 XXX
 
@@ -298,14 +333,9 @@ emd_df <- readRDS(object_path)
 ```
 
 ```{r display_eds_results}
+
+emd_df$p_value <- format(emd_df$p_value, scientific = TRUE)
 knitr::kable(emd_df)
-```
-
-XXX
-
-```{r display_emds_plot, echo=FALSE}
-plot_path <- paste0(getwd(), '/figures/', 'emds_plot.png')
-knitr::include_graphics(plot_path)
 ```
 
 # Conclusions
