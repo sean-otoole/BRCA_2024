@@ -7,9 +7,9 @@ output:
     theme: cayman
     toc: true
 params:
-  run_python_script: TRUE  # determines if the python pipeline will ran, or if the script relies on already stored objects
-  run_R_script: TRUE # determines if the R pipeline will ran, or if the script relies on already stored objects
-  remake_figs: TRUE #will not rely on previously generated figures if TRUE
+  run_python_script: FALSE  # determines if the python pipeline will ran, or if the script relies on already stored objects
+  run_R_script: FALSE # determines if the R pipeline will ran, or if the script relies on already stored objects
+  remake_figs: FALSE #will not rely on previously generated figures if TRUE
 ---
 
 <!--
@@ -21,7 +21,7 @@ In order to generate the report, you can run the script using the following comm
 
 This report investigates B-cell subtypes within pre- and post-menopausal Visium spatial transcriptomics samples. The report focuses on whether double-negative B-cell subtypes—also known as atypical memory cells or age-associated B-cells—could explain differences in patient outcomes and tumor composition between these pre- and postmenopausal patient groups.
 
-Pre-menopausal patients often present with more aggressive tumors and more severe diagnoses compared to their post-menopausal counterparts. This analysis explores how variations in B-cell subtypes may contribute to these differences. Below you will find a series of analysis attempt to explain this differences. However, please note that due to inadequate sampling and a high level of variance the results are currently inconclusive.
+Pre-menopausal patients often present with more aggressive tumors and more severe diagnoses compared to their post-menopausal counterparts. This analysis explores how variations in B-cell subtypes may contribute to these differences. Below you will find a series of analysis suggest ing that the double-negative B-cell subtype is likley more enriched in premenopausal breast cancer tumors.
 
 ```{r data_preprocessing, echo=FALSE, message=FALSE, warning=FALSE, results = 'hide', fig.show = 'hide'}
 library(Seurat)
@@ -136,18 +136,16 @@ celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist.png'
 knitr::include_graphics(celltypist_bar_chart)
 ```
 
-Additionally, we can assess the extent of immune and vascular cell-driven invasion in each tumor by simplifying our cell type categories into two groups: epithelial cells and all other cell types, which include endothelial and immune cells. This visualization (shown below) reveals greater variability within the postmenopausal samples.
+Additionally, we can assess the extent of immune and vascular cell-driven invasion in each tumor by simplifying our cell type categories into two groups: epithelial cells and all other cell types, which include endothelial and immune cells. This visualization (shown below) reveals greater variability, for the epithelial cell percentage, within the postmenopausal samples (post var = 0.1, pre var = 0.008).
 
 ```{r display_bar_summary_simple, echo=FALSE}
 celltypist_bar_chart <- paste0(getwd(), '/figures/cell_type_dist_celltypist_simple.png')
 knitr::include_graphics(celltypist_bar_chart)
 ```
 
-XXX We can also compare this variance... XXX
-
 # Examination of gene signatures
 
-Given that each spot on our Visium slides typically contains a mix of cell types, it was necessary to examine how gene signatures associated with different cell types varied across spots. Here the approach utilized is outlined in [AUCell](https://www.bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html) that was used to analyze changes in gene signatures between conditions. While the AUCell package is written in R, it was partially reimplemented for this analysis in Python for this pipeline (see pyAUCell.py in the project codebase). This method is also well-suited for single-cell datasets, which share many challenges with NGS-based spatial sequencing platforms. A previous review ([eLife](https://elifesciences.org/articles/71994)) highlights that AUCell is less sensitive to various biases compared to other gene signature methods which is why this particular method was implemented.
+Given that each spot on our Visium slides typically contains a mix of cell types, it was necessary to examine how gene signatures associated with different cell types varied across spots. Here the approach utilized is outlined in [AUCell](https://www.bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html) that was used to analyze changes in gene signatures between conditions. While the AUCell package is written in R, it was partially reimplemented for this analysis in Python (see pyAUCell.py in the project codebase). This method is reportedly well-suited for single-cell datasets, which share many challenges with NGS-based spatial sequencing platforms. A previous review ([eLife](https://elifesciences.org/articles/71994)) highlights that AUCell is less sensitive to various biases compared to other gene signature methods which is why this particular method was implemented.
 
 In brief, AUCell ranks gene expression within each cell (or spot) and determines how many genes from a given signature exceed a specific ranking threshold (e.g., top 5%). It then calculates the Area Under the Curve (AUC) for a plot where the x-axis represents gene rank and the y-axis is the cumulative distribution of signature genes at each rank. The result is normalized to the maximum possible AUC for that gene signature.
 
@@ -164,7 +162,7 @@ signatures <- readRDS(object_path)
 print(signatures$DN2_Bcells)
 ```
 
-A summary of how this gene signature is changing across conditions is shown below. In the top half of the figure are each of the Visium samples with a heatmap of the gene signature superimposed on top of the samples' images. In the bottom left portion of the figure are the normalized densities for the distribution of values in each condition (pre- vs. postmenopausal) across spots for the double-negative B cell signature. In the lower middle panel is a scatter plot comparison of the averaged score value for each sample. Finally, within the lower right panel is the Moran's I value across samples. Moran's I refers to the spatial autocorrelation; the value ranges from -1 to 1, with 1 exemplifying a high degree of spatial correlation within space. There were no major differences between the sample sets due to a high degree of variance, especially within the postmenopausal samples.
+A summary of how this gene signature is changing across conditions is shown below. In the top half of the figure are each of the Visium samples with a heatmap of the gene signature superimposed on top of the samples' images. In the bottom left portion of the figure are the normalized densities for the distribution of values in each condition (pre- vs. postmenopausal) across spots for the double-negative B cell signature. In the lower middle panel is a scatter plot comparison of the averaged score value for each sample. Finally, within the lower right panel is the Moran's I value across samples. Moran's I refers to the spatial autocorrelation; the value ranges from -1 to 1, with 1 exemplifying a high degree of spatial correlation within space. There were no major differences between the sample sets due to a high degree of variance, especially within the postmenopausal samples. Additionally, many of these genes were expressed at relatively low levels hence the high degree of noise for this particular metric.
 
 ```{r grab_double_neg, echo=FALSE, fig.show='hide',results ='hide'}
 if (params$remake_figs) {
@@ -186,7 +184,7 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-## Examination of additional potentially relevant gene signatures
+## Examination of other gene signatures
 
 Although not directly relevant to the investigation of the double-negative B-cell subtype, several other gene signatures showed reasonably large differences between conditions. The first relates to natural killer cells. A summary of the results for this gene signature is displayed below in a manner consistent with the previous figure. While the sample-averaged values compared between conditions are not significant, the overall difference between distributions is most likely significant. However, I did not investigate this further, as it was not the focus of this analysis. I simply wanted to highlight it as a potential new area of investigation.
 
@@ -237,7 +235,7 @@ It is important to note that both distributions exhibit bimodality, which may re
 
 # Correlation of gene signatures with cell type identities
 
-To better understand potential differences between pre- and postmenopausal samples, I investigated how the enrichment of these various gene signatures might change as a function of the majority cell type embedded within each spot. For example, I examined how well the double-negative B-cell signature correlates with spots assigned to B-cells. A high correlation would suggest that many B-cell-containing spots are highly enriched for double-negative B-cells.
+To better understand potential differences between pre- and postmenopausal samples, I investigated how the enrichment of these various gene signatures might change as a function of the majority cell type embedded within each spot. For example, I examined how well the double-negative B-cell signature correlates with the previously calculated B-cells cosine similarity score. A high correlation would suggest that many B-cell-containing spots are highly enriched for double-negative B-cells.
 
 To calculate the correlation between signatures and cell identities, I used a previously published single-cell RNA sequencing breast cancer study ([Wu et al., 2021](https://www.nature.com/articles/s41588-021-00911-1)) to build a reference vector for each major cell type. Reference vectors were calculated by averaging the expression of highly variable genes for each cell type, such that each major cell type had a single average expression vector. Then, the cosine similarity score was calculated for each Visium spot and cell type expression vector. Cosine similarity is useful in this context because it does not rely on the magnitude of expression within samples but rather on the angle, making it less sensitive to sequencing depth and technology than Pearson’s or Spearman’s correlation metrics.
 
@@ -252,7 +250,7 @@ knitr::include_graphics(post_corr)
 
 # Comparison of samples with bulk RNA sequencing data
 
-Many of the analyses conducted here reveal interesting trends but are ultimately inconclusive. To better understand why, I compared the spatial transcriptomics samples to a previous bulk RNA sequencing dataset from breast cancer patients provided by Paolo Angelino. In brief, the analysis involved calculating Z-scores for the previously mentioned gene signatures in both spatial and bulk samples separately, combining them into a single matrix; and performing a principal component analysis (nPC = 2). The samples were then clustered using the k-means algorithm (k=2). The results (shown below) indicate that all bulk RNA sequencing samples segregate as expected (pre- or postmenopausal). However, two spatial samples, POST-06 and PRE-01, clustered with the opposing condition. It’s unclear why this happens, but one possibility is greater measurement variance in the spatial samples. Alternatively, the more precise exclusion of non-tumor tissue in spatial samples or differences in sample collection could be factors. Finally, this segregation pattern may only be due to natural sources of biological variation. While it’s unclear how to incorporate this information into the analysis, I wanted to report it here for awareness.
+Many of the analyses conducted here reveal interesting trends but are ultimately inconclusive. To better understand why, I compared the spatial transcriptomics samples to a previous bulk RNA sequencing dataset from breast cancer patients provided by Paolo Angelino. In brief, the analysis involved calculating Z-scores for the previously mentioned gene signatures in both spatial and bulk samples separately, combining them into a single matrix; and performing a principal component analysis (nPC = 2). The samples were then clustered using a k-means algorithm (k=2). The results (shown below) indicate that all bulk RNA sequencing samples segregate as expected (pre- or postmenopausal). However, two spatial samples, POST-06 and PRE-01, clustered with the opposing condition. It’s unclear why this happens, but one possibility is greater measurement variance in the spatial samples. Alternatively, the more precise exclusion of non-tumor tissue in spatial samples or differences in sample collection could be factors. Finally, this segregation pattern may only be due to natural sources of biological variation. While it’s unclear how to incorporate this information into the analysis, I wanted to report it here for awareness.
 
 ```{r display_bulk_compar_plot, echo=FALSE}
 bulk_low_dim_plot <- paste0(getwd(), '/figures/pca_kmeans_clustering_highlighted_rotated_labels.png')
@@ -261,15 +259,14 @@ knitr::include_graphics(bulk_low_dim_plot)
 
 # Similarity scoring based on the b-cell populations described in Ma et al. 2024
 
-These gene signature scores do not necessarily represent the ground truth when assessing the enrichment of this specific B-cell population, so I wanted to use additional metrics. Thus, I again calculated cosine similarity scores, as described previously in this report. However, this score calculation incorporated a previously published study ([Ma et al., 2024](https://www.science.org/doi/abs/10.1126/science.adj4857)), which largely focused on B-cell subtypes. Below, I show a replication of Figure 1B from this paper. Importantly, the relevant B-cell population is labeled as B.09.DUSP4+AtM, which was used to calculate the cosine similarity scores relevant to the double-negative B-cell population.
+These gene signature scores do not necessarily represent the ground truth when assessing the enrichment of the dominant negative B-cell population, so I wanted to use additional metrics. Thus, I again calculated cosine similarity scores, as described previously in this report. However, this score calculation incorporated a previously published study ([Ma et al., 2024](https://www.science.org/doi/abs/10.1126/science.adj4857)), which largely focused on B-cell subtypes. I first extracted 7000 highly variably genes using the Seurat package's FindVariableFeatures function using the dispersion method. Then I excluded genes not included in the visium dataset leaving 4227. With this gene set I then calcualted the average exrpession vector for each major cell type described in the Ma et al., 2024 study. Below, I show a replication of Figure 1B from this paper. Importantly, the relevant B-cell population is labeled as B.09.DUSP4+AtM, which was used to calculate the cosine similarity scores relevant to the double-negative B-cell population.
 
 ```{r display_fig_ma_et_al, echo=FALSE}
 ref_umap <- paste0(getwd(), '/figures/ref_umap.png')
 knitr::include_graphics(ref_umap)
 ```
 
-Additionally, the cosine similarity was calculated by taking the averaged expression levels for the atypical memory cells from the Ma et al. paper and then calculating (which were derived the corrected normalized expression values from the SCTransform function after correcting for patient origin, mitochondrial percentage, and feature as well as total count per cell. Additionally, the expression vector only included highly variable genes within the Ma et. al data set. This averaged vector of highly variable genes was used for calculating the cosine similarity for each spot in the visium data set. The visium expression values were also corrected after adjusting for sample origin, mitochondrial percent, total features, and counts.
-When examining the cosine similarity scores for the double-negative B-cell population derived from the Ma et al. dataset (shown below), there were clear differences between samples. However, this metric disagrees with the other two metrics reported. It will likely require some further validation. Additionally, the lack of bimodality indicates that this metric is not specific enough, potentially due to poor gene feature selection.
+Below is a description of the cosine similarity score for the double-negative B-cell subtype, which I am labeling using the nomenclature based on the paper it is derived from. There was a significant difference in the distribution of values for this metric between conditions; however, when comparing this metric across samples after averaging, the result was not significant. Additionally, there are no clear differences in the spatial autocorrelation of this metric. Still, the overall difference in the distribution suggests that further investigation would be warranted.
 
 ```{r grab_double_neg_cos, echo=FALSE, fig.show='hide',results ='hide'}
 
@@ -295,14 +292,14 @@ knitr::include_graphics(plot_path)
 
 ## Testing the accuracy of the cosine similarity metric derived from the refernce data set
 
-XXX
+To be sure of the validity of this metric I excluded 20% of this reference dataset from the analysis. Then using the averaged gene expression vector for the double-negative B cell subtype (B.09.DUSP4+AtM) I calcualte the cosine similarity score for each of the cells within the test set. Below you will find the distribution of these values across all cell types in the test data set. As yuou can see the distirbution of values is highest for the double negative B-cell subtype.
 
 ```{r display_violin_cose, echo=FALSE}
 plot_path <- paste0(getwd(), '/figures/', 'violin_cos_ref.png')
 knitr::include_graphics(plot_path)
 ```
 
-XXX
+Additionally, when I compare the calculated B.09.DUSP4+AtM cosine similarity to the other subtype distributions, it is significantly larger in all cases (FDR corrected Wilcoxon rank-sum test). This analysis demonstrated the selectivity of the cosine similarity metric.
 
 ```{r display_violin_stats, echo = FALSE}
 
@@ -311,13 +308,13 @@ table_stats <- read.csv(table_path)
 table_stats$p_value <- format(table_stats$p_value, scientific = TRUE)
 table_stats$adjusted_p_value <- format(table_stats$adjusted_p_value, scientific = TRUE)
 # Display the table with knitr::kable
-knitr::kable(table_stats, caption = "Table: DNB Violin Cell Statistics with Scientific Notation")
+knitr::kable(table_stats, caption = "Table: Double-negative B-cell Violin Cell Statistics with Scientific Notation")
 
 ```
 
 ## Earth mover's distance analysis
 
-XXX
+A major concern I had was that due to the high degree of similarity between each of these B cell subtypes, it was possible that the shift in the distribution for the cosine similarity scores corresponding to the double-negative B cell subtype could be driven by a different but similar B cell population. To test for this possibility, I generated distributions for each condition (pre vs. post) as well as for each B cell subtype. Then, I compared the difference between these populations using an [earth mover's distance metric](https://en.wikipedia.org/wiki/Earth_mover%27s_distance) or EMD. The EMD describes the amount of work required to transform one distribution into another. Although all B cell subtypes demonstrated a clear EMD shift (displayed below), the largest EMD value belonged to the double-negative B cell type. This suggested that it is likely that the double-negative B cell population is the strongest contributor to the cosine similarity shift that is described.
 
 
 ```{r display_emds_plot, echo=FALSE}
@@ -325,7 +322,7 @@ plot_path <- paste0(getwd(), '/figures/', 'emds_plot.png')
 knitr::include_graphics(plot_path)
 ```
 
-XXX
+Finally, I should mention that I tested whether each of these EMD values was significant by performing a permutation test (10,000 iterations) through randomly selecting two distributions from each of the pre- and postmenopausal conditions.
 
 ```{r get_emd_df,echo=FALSE, fig.show='hide',results ='hide'}
 object_path <- paste0(getwd(),'/results/eds_results_df.rds')
@@ -340,7 +337,9 @@ knitr::kable(emd_df)
 
 # Conclusions
 
-Although there are differences between these sample sets regarding the testing for enrichment of double-negative B-cells, no strong conclusions can currently be drawn. There were significant differences between conditions for the cosine similarity score of the double-negative B-cell populations as derived from the Ma et al. dataset; however, this currently disagrees with other metrics and will require more investigation. Regardless, much of the inconclusiveness surrounding other metrics is likely due to the high levels of variance observed among the postmenopausal samples. Additionally, in some cases, sample quality (e.g., POST-11) may have been a limiting factor. Furthermore, the fact that some samples appear to cluster with the opposing condition (e.g., POST-06 and PRE-01) raises concern. However, there is still potential to extract valuable information from these datasets, as evidenced by the clear trends in some of the gene signatures we tested (see above). Further analyses examining differential expression or spatial localization patterns of genes, as well as other metrics, could potentially provide a clearer picture. Although such results may not necessarily indicate changes in B-cell subtype distributions, they may point to other avenues of investigation. Additionally, even if the quantity and localization patterns of double-negative B-cells are similar between conditions, it does not necessarily imply that the interactions of this cell type with the tissue are identical. An analysis of cell-cell interactions might provide more insight.
+The distributional shift in cosine similarity values associated with the double-negative B cell population suggests that there may be an increased prevalence of this cell type within premenopausal breast cancer samples. However, this finding is merely suggestive. Due to technical and biological variation, the gene signature analysis did not corroborate this finding. More precise methods, such as higher resolution spatial transcriptomics datasets or single-cell RNA sequencing, could potentially validate this result. Still, the analysis outlined here does suggest that further investigation may be warranted.
+
+Additionally, further analyses examining differential expression or spatial localization patterns of genes, as well as other metrics, could potentially provide a clearer picture. Although such results may not necessarily indicate changes in B-cell subtype distributions, they may point to other avenues of investigation. Even if the quantity and localization patterns of double-negative B-cells are similar between conditions, it does not necessarily imply that the interactions of this cell type with the tissue are identical. An analysis of cell-cell interactions might provide more insight.
 
 # Other Potential Analyses
 

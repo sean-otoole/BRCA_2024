@@ -207,6 +207,15 @@ simple_df = simple_df[['PRE-01', 'PRE-02', 'PRE-04', 'PRE-05',
 combined_df = combined_df[['PRE-01', 'PRE-02', 'PRE-04', 'PRE-05', 
                        'POST-03', 'POST-05', 'POST-06', 'POST-11']]
 
+# save the dataframes  for later analysis
+
+# Define the path to the subfolder
+results_folder = os.path.join(os.getcwd(), 'results')
+# Save simple_df to a CSV file in the results folder
+simple_df.to_csv(os.path.join(results_folder, 'simple_df.csv'), index=True)
+# Save combined_df to a CSV file in the results folder
+combined_df.to_csv(os.path.join(results_folder, 'combined_df.csv'), index=True)
+
 # Plot a stacked bar graph for the proportions of cell types across samples
 # ax = combined_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap
 ax = simple_df.T.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='Set1')  # Higher contrast colormap

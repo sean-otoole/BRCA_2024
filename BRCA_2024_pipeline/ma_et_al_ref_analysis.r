@@ -178,6 +178,9 @@ ggsave(filename = output_path_plot, plot = vp, width = 10, height = 8, dpi = 300
 
 # Earth Mover's Distance (EMD) Analysis
 
+pre <- subset(visium_merge, subset = sample %in% c('PRE-01','PRE-02','PRE-04','PRE-05'))
+post <- subset(visium_merge, subset = sample %in% c('POST-03','POST-05','POST-06','POST-11'))
+
 # Initialize an empty data frame
 results_df <- data.frame(
   cell_type = character(),       # For cell type names (character column)
