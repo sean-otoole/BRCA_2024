@@ -308,7 +308,7 @@ table_stats <- read.csv(table_path)
 table_stats$p_value <- format(table_stats$p_value, scientific = TRUE)
 table_stats$adjusted_p_value <- format(table_stats$adjusted_p_value, scientific = TRUE)
 # Display the table with knitr::kable
-knitr::kable(table_stats, caption = "Table: Double-negative B cell Violin Cell Statistics with Scientific Notation")
+knitr::kable(table_stats)
 
 ```
 
@@ -329,7 +329,7 @@ object_path <- paste0(getwd(),'/results/eds_results_df.rds')
 emd_df <- readRDS(object_path)
 ```
 
-```{r display_eds_results}
+```{r display_eds_results, echo = FALSE}
 
 emd_df$p_value <- format(emd_df$p_value, scientific = TRUE)
 knitr::kable(emd_df)
