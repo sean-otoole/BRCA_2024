@@ -9,7 +9,7 @@ output:
 params:
   run_python_script: FALSE  # determines if the python pipeline will ran, or if the script relies on already stored objects
   run_R_script: FALSE # determines if the R pipeline will ran, or if the script relies on already stored objects
-  remake_figs: FALSE #will not rely on previously generated figures if TRUE
+  remake_figs: TRUE #will not rely on previously generated figures if TRUE
 ---
 
 <!--
@@ -158,7 +158,7 @@ object_path <- paste0(getwd(),'/gene_signatures/','all_signature_list_symbol.Rds
 signatures <- readRDS(object_path)
 ```
 
-```{r display_sig}
+```{r display_sig, echo = FALSE}
 print(signatures$DN2_Bcells)
 ```
 
