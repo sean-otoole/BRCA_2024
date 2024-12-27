@@ -9,20 +9,28 @@ For a visual summary of this project please download and view the HTML file asso
 ```
 
 ┌── BRCA_2024_pipeline/                            : contains the main pipeline
-│   ├── XXX
-│   └── XXX
+│   ├── BRCA_report.Rmd
+│   ├── acquirePseudoBulkRef.py
+│   ├── applyCosineScores.py
+│   ├── applyImageMask.py
+│   ├── geneSigCosSimHeatmap.py
+│   ├── getRSigs.py
+│   ├── helpFuncs.py
+│   ├── label_transfer_seurat_deprecrated.r
+│   ├── ma_et_al_ref_analysis.r
+│   ├── preProcessPipeline.py
+│   ├── pyAUCell.py
+│   ├── sctransform.r
+│   ├── spatial_metric_description.r
+│   ├── summary_stats.r
+│   ├── visiumPythonPipeline.py
+│   ├── reports/
+│   │   └── BRCA_report.html
+│   └── visiumRPipeline
 ├── BRCA_nbs_previous/                             : contains previous notebook files for prototyping pipeline scripts
-│   ├── XXX
-│   └── XXX
-├── BRCA_scripts/                                  : contains early prototypcs for scripts of the main pipeline
-│   ├── XXX
-│   └── XXX                             
+├── BRCA_scripts/                                  : contains early prototypcs for scripts of the main pipeline                        
 |── figures/
-│   ├── XXX
-│   └── XXX
 ├── gene_signatures/                               : list of genes associated with various immune cell type related gene signatures
-│   ├── XXX
-│   └── XXX
 ├── BRCA_report.html                               : report file generated with R mardown script produced with python and R code from the main pipline
 └── README.md                                      : project description
 
