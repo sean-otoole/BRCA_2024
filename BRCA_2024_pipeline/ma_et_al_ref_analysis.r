@@ -100,6 +100,9 @@ pseudo_bulk_matrix <- GetAssayData(pseudo_b_ref, assay = "RNA", slot = "data")
 overlapping_genes <- intersect(rownames(visium_matrix), rownames(pseudo_bulk_matrix))
 visium_matrix <- visium_matrix[overlapping_genes, ]
 pseudo_bulk_matrix <- pseudo_bulk_matrix[overlapping_genes, ]
+output_path <- paste0(getwd(), '/objects/', 'pseudobulk_reference_profiles.rds')
+saveRDS(pseudo_bulk_matrix, file = output_path)  # saveed for comparison to the bulk data
+
 ref_test_matrix <- GetAssayData(ref_test, assay = "RNA", slot = "data")[overlapping_genes, ]
 
 output_path <- paste0(getwd(), '/results/', 'overlapping_genes.rds')
