@@ -8,7 +8,7 @@ output:
     toc: true
 params:
   run_python_script: FALSE  # determines if the python pipeline will ran, or if the script relies on already stored objects
-  run_R_script: FALSE # determines if the R pipeline will ran, or if the script relies on already stored objects
+  run_R_script: TRUE # determines if the R pipeline will ran, or if the script relies on already stored objects
   remake_figs: TRUE #will not rely on previously generated figures if TRUE
 ---
 
@@ -290,7 +290,7 @@ plot_path <- paste0(getwd(), '/figures/', current_metric, '_summary.png')
 knitr::include_graphics(plot_path)
 ```
 
-## Testing the accuracy of the cosine similarity metric derived from the refernce data set
+## Testing the accuracy of the cosine similarity metric derived from the reference data set
 
 To ensure the validity of this metric, I excluded 20% of the reference dataset from the analysis. Then, using the averaged gene expression vector for the double-negative B cell subtype (B.09.DUSP4+AtM), I calculated the cosine similarity score for each of the cells within the test set. Below, you will find the distribution of these values across all cell types in the test dataset. As you can see, the distribution of values is highest for the double-negative B cell subtype.
 
