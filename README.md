@@ -31,7 +31,7 @@ For a visual summary of this project please take a look at the [report](https://
 ├── BRCA_scripts/                                  : contains early prototypes for scripts of the main pipeline                        
 |── figures/
 ├── gene_signatures/                               : list of genes associated with various immune cell type-related gene signatures
-├── index.html                               : report file generated with R markdown script produced with Python and R code from the main pipeline
+├── index.html                                     : report file generated with R markdown script produced with Python and R code from the main pipeline
 └── README.md                                      : project description
 
 ```
