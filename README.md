@@ -1,13 +1,9 @@
 # Spatial transcriptomics analysis of pre- and postmenopausal breast cancer samples:
-
 For a visual summary of this project please take a look at the [report](https://sean-otoole.github.io/BRCA_2024/) associated with this repository.
-
 <sub>**Please note** that this repository, even with the appropriate libraries and packages installed, will not operate independently. For confidentiality reasons the **original datasets** are not included.
 <br>
-
 ## Project Organization
 ```
-
 ┌── BRCA_2024_pipeline/                            : contains the main pipeline
 │   ├── BRCA_report.Rmd                            : Generates the report file
 │   ├── acquirePseudoBulkRef.py                    : Acquires the breast cancer reference data set and constructs pseudo bulk profiles from the reference data
@@ -19,7 +15,7 @@ For a visual summary of this project please take a look at the [report](https://
 │   ├── label_transfer_seurat_deprecrated.r        : No longer relevant script which had utilized a Seurat-based integration technique
 │   ├── ma_et_al_ref_analysis.r                    : Processes and acquires the b cell subtype data set
 │   ├── preProcessPipeline.py                      : Processes all of the visium samples
-│   ├── pyAUCell.py                                : A python implementaiton of the AUcell method for calculating gene signatures
+│   ├── pyAUCell.py                                : A Python port of the AUCell method for calculating gene signatures; derived from AUCell (Aibar & Aerts, VIB-KU Leuven, https://github.com/aertslab/AUCell), licensed GPL-3.0-only — see LICENSE
 │   ├── sctransform.r                              : Script for calling the transform normalization technique which regresses out sources of technical noise.
 │   ├── spatial_metric_description.r               : Graphic script which will display example images and calculate statistics given an already present metric
 │   ├── summary_stats.r                            : Quickly displays some relevant stats
@@ -33,7 +29,12 @@ For a visual summary of this project please take a look at the [report](https://
 ├── gene_signatures/                               : list of genes associated with various immune cell type-related gene signatures
 ├── index.html                                     : report file generated with R markdown script produced with Python and R code from the main pipeline
 └── README.md                                      : project description
-
 ```
-
 <br>
+
+## License
+This repository is licensed under **GPL-3.0-only** — see [LICENSE](./LICENSE) for the full text.
+
+`pyAUCell.py` is a Python reimplementation of the [AUCell](https://github.com/aertslab/AUCell) method (Sara Aibar & Stein Aerts, Laboratory of Computational Biology, VIB-KU Leuven Center for Brain & Disease Research), originally distributed via [Bioconductor](https://bioconductor.org/packages/AUCell) under GPL-3.0. As a derivative work, it is licensed under the same terms.
+
+> **Note:** This repository did not originally carry a license or attribution for `pyAUCell.py`'s derivation from AUCell. This was corrected on 2026-09-03 to properly reflect the license terms and credit the original authors. Anyone who obtained a copy prior to this correction should refer to these updated terms.
