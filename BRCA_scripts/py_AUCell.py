@@ -1,15 +1,19 @@
 # pyAUCell.py
 #
 # This file is part of the BRCA_2024 project.
-# It is a Python reimplementation of the AUCell method, derived from:
+# It is a simplified, reduced-scope reimplementation of the AUCell method
+# (not a full port), derived from:
 #
 #   AUCell (https://github.com/aertslab/AUCell)
 #   Copyright (C) Sara Aibar, Stein Aerts
 #   Laboratory of Computational Biology, VIB-KU Leuven Center for Brain & Disease Research
 #   Originally distributed via Bioconductor (https://bioconductor.org/packages/AUCell)
 #
-# As a derivative work, this file is licensed under the GNU General Public
-# License v3.0 (GPL-3.0-only), the same license as the original AUCell package.
+# As a derivative work, this file, and only this file, is licensed under
+# the GNU General Public License v3.0 (GPL-3.0-only), the same license as
+# the original AUCell package. See LICENSE-pyAUCell.txt in this directory
+# for the full license text. The rest of this repository is not covered
+# by this license unless otherwise noted.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,16 +25,14 @@
 # GNU General Public License for more details.
 
 """
-This script provides utilities for calculating the normalized  ranked AUC for specific gene sets.
-
-It is based on previous work, specificvally the AUCell package written for R.
-
-See R packages here: https://bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html
+This script provides utilities for calculating the normalized ranked AUC for specific gene sets.
+It is a simplified reimplementation of the core method used in the AUCell package, originally written for R.
+See the original R package here: https://bioconductor.org/packages/devel/bioc/vignettes/AUCell/inst/doc/AUCell.html
 
 Example:
     You can use the functions in this module as follows:
-    
-    anndata_object = AUCell(anndata_object,signatures_dict,signatures_names gene_lists, AUC_threshold)
+
+    anndata_object = AUCell(anndata_object, signatures_dict, signatures_names, gene_lists, AUC_threshold)
 
 Will return a series of normalized gene signature scores that are stored in the anndata_object.
 """
