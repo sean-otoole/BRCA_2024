@@ -15,7 +15,7 @@ For a visual summary of this project please take a look at the [report](https://
 │   ├── label_transfer_seurat_deprecrated.r        : No longer relevant script which had utilized a Seurat-based integration technique
 │   ├── ma_et_al_ref_analysis.r                    : Processes and acquires the b cell subtype data set
 │   ├── preProcessPipeline.py                      : Processes all of the visium samples
-│   ├── pyAUCell.py                                : A Python port of the AUCell method for calculating gene signatures; derived from AUCell (Aibar & Aerts, VIB-KU Leuven, https://github.com/aertslab/AUCell), licensed GPL-3.0-only — see LICENSE
+│   ├── pyAUCell.py                                : A simplified Python reimplementation of the core AUCell method for calculating gene signatures (not a full port); derived from AUCell (Aibar & Aerts, VIB-KU Leuven, https://github.com/aertslab/AUCell), licensed GPL-3.0-only, see LICENSE-pyAUCell.txt
 │   ├── sctransform.r                              : Script for calling the transform normalization technique which regresses out sources of technical noise.
 │   ├── spatial_metric_description.r               : Graphic script which will display example images and calculate statistics given an already present metric
 │   ├── summary_stats.r                            : Quickly displays some relevant stats
@@ -33,8 +33,6 @@ For a visual summary of this project please take a look at the [report](https://
 <br>
 
 ## License
-This repository is licensed under **GPL-3.0-only** — see [LICENSE](./LICENSE) for the full text.
+Most of this repository is unlicensed and not covered by any particular license.
 
-`pyAUCell.py` is a Python reimplementation of the [AUCell](https://github.com/aertslab/AUCell) method (Sara Aibar & Stein Aerts, Laboratory of Computational Biology, VIB-KU Leuven Center for Brain & Disease Research), originally distributed via [Bioconductor](https://bioconductor.org/packages/AUCell) under GPL-3.0. As a derivative work, it is licensed under the same terms.
-
-> **Note:** This repository did not originally carry a license or attribution for `pyAUCell.py`'s derivation from AUCell. This was corrected on 2026-09-03 to properly reflect the license terms and credit the original authors. Anyone who obtained a copy prior to this correction should refer to these updated terms.
+`pyAUCell.py` is the exception: it is a simplified, reduced-scope reimplementation of the core method used in [AUCell](https://github.com/aertslab/AUCell) (Sara Aibar & Stein Aerts, Laboratory of Computational Biology, VIB-KU Leuven Center for Brain & Disease Research), originally distributed via [Bioconductor](https://bioconductor.org/packages/AUCell) under GPL-3.0. As a derivative work, this file is licensed under **GPL-3.0-only**, see [LICENSE-pyAUCell.txt](./BRCA_2024_pipeline/LICENSE-pyAUCell.txt) for the full text.
