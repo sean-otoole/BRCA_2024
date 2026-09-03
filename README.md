@@ -36,3 +36,5 @@ For a visual summary of this project please take a look at the [report](https://
 Most of this repository is unlicensed and not covered by any particular license.
 
 `pyAUCell.py` is the exception: it is a simplified, reduced-scope reimplementation of the core method used in [AUCell](https://github.com/aertslab/AUCell) (Sara Aibar & Stein Aerts, Laboratory of Computational Biology, VIB-KU Leuven Center for Brain & Disease Research), originally distributed via [Bioconductor](https://bioconductor.org/packages/AUCell) under GPL-3.0. As a derivative work, this file is licensed under **GPL-3.0-only**, see [LICENSE-pyAUCell.txt](./BRCA_2024_pipeline/LICENSE-pyAUCell.txt) for the full text.
+
+Note: the [aertslab/AUCell GitHub repository](https://github.com/aertslab/AUCell) does not contain a `LICENSE` file; the GPL-3.0 designation is documented in the package's `DESCRIPTION` field and on its [Bioconductor](https://bioconductor.org/packages/AUCell) listing.
