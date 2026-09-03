@@ -1,3 +1,25 @@
+# pyAUCell.py
+#
+# This file is part of the BRCA_2024 project.
+# It is a Python reimplementation of the AUCell method, derived from:
+#
+#   AUCell (https://github.com/aertslab/AUCell)
+#   Copyright (C) Sara Aibar, Stein Aerts
+#   Laboratory of Computational Biology, VIB-KU Leuven Center for Brain & Disease Research
+#   Originally distributed via Bioconductor (https://bioconductor.org/packages/AUCell)
+#
+# As a derivative work, this file is licensed under the GNU General Public
+# License v3.0 (GPL-3.0-only), the same license as the original AUCell package.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+
 """
 This script provides utilities for calculating the normalized  ranked AUC for specific gene sets.
 
